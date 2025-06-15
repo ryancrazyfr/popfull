@@ -41,21 +41,28 @@ logging.basicConfig(level=logging.INFO)
 # === COMMANDS ===
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "👋 Welcome! POP (Proof of Promo) is a screenshot showing your ad posted in one of the groups.\n"
-        "Use /submitpop to begin.\n\n"
-        "Then upload your screenshot."
+    welcome_msg = (
+        "👋 Welcome to the POP Bot!\n\n"
+        "📌 *What is POP?*\n"
+        "POP (Proof of Promo) is a screenshot you take after promoting our group links "
+        "on your own channel or another platform. It helps keep our traffic strong!\n\n"
+        "🛠 To submit your weekly POP:\n"
+        "1. Tap /submitpop\n"
+        "2. Upload your screenshot\n\n"
+        "📎 Below are the group links you need to promote 👇"
     )
+    await update.message.reply_markdown(welcome_msg)
 
-async def poplinks(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "📌 Here are the groups where you must post your ad:\n\n"
-        "💃 Sexy Baddies - https://t.me/+tGBn9q_6Z-9jMTAx\n"
-        "🎥 Content Hub - https://t.me/+F_BNXoMjPPhmNGEx\n"
-        "🦜 Seductive Sirens - https://t.me/+nvm1zwZz7FA1MTdh\n"
-        "😈 The Sluts Store - https://t.me/+pkxiRKn2ZvcyMjI8\n"
-        "🔥 CumSlut Paradise - https://t.me/+y5TaJPgVGvI1NzQ0"
-    )
+    pop_links = """🔗 *Do your POP here:*
+
+- [Sexy Baddies](https://t.me/+tGBn9q_6Z-9jMTAx)
+- [Content Hub](https://t.me/+F_BNXoMjPPhmNGEx)
+- [Seductive Sirens](https://t.me/+nvm1zwZz7FA1MTdh)
+- [The Sluts Store](https://t.me/+pkxiRKn2ZvcyMjI8)
+- [My Hot Friends](https://t.me/+A47SCYOy2_MzOTcx)
+- [CumSlut Paradise](https://t.me/+y5TaJPgVGvI1NzQ0)
+"""
+    await update.message.reply_markdown(pop_links)
 
 async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != "private":
