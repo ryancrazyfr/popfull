@@ -146,7 +146,10 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(f"❌ No pending submission found for user {user_id}.")
             return
 
+        # Upload file to Google Drive
         drive_link = upload_to_drive(data["username"], data["filename"], data["filepath"])
+
+        # Log to Google Sheet
         sheet.append_row([
             data["username"],
             str(data["user_id"]),
@@ -155,37 +158,40 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
             drive_link
         ])
 
-        # ✅ FIXED: Unmute with full permissions
+        # Promote with custom title in all groups
         for group_id in GROUP_IDS:
-          try:
-            await context.bot.promote_chat_member(
-                group_id,
-                int(user_id),
-                can_change_info=False,
-                can_post_messages=False,
-                can_edit_messages=False,
-                can_delete_messages=False,
-                can_invite_users=False,
-                can_restrict_members=False,
-                can_pin_messages=False,
-                can_promote_members=False,
-                is_anonymous=False
-            )
-            await context.bot.set_chat_administrator_custom_title(
-                chat_id=group_id,
-                user_id=int(user_id),
-                custom_title="Verified Seller"
-            )
-         except Exception as e:
-            print(f"Error promoting or titling user {user_id} in {group_id}: {e}")
+            try:
+                await context.bot.promote_chat_member(
+                    group_id,
+                    int(user_id),
+                    can_change_info=False,
+                    can_post_messages=False,
+                    can_edit_messages=False,
+                    can_delete_messages=False,
+                    can_invite_users=False,
+                    can_restrict_members=False,
+                    can_pin_messages=False,
+                    can_promote_members=False,
+                    is_anonymous=False
+                )
 
+                await context.bot.set_chat_administrator_custom_title(
+                    chat_id=group_id,
+                    user_id=int(user_id),
+                    custom_title="✅ Verified Seller"
+                )
 
-            
-        await context.bot.send_message(chat_id=data["user_id"], text="✅ Your POP has been approved and logged.")
+            except Exception as e:
+                print(f"Error promoting or titling user {user_id} in {group_id}: {e}")
+
+        await context.bot.send_message(chat_id=data["user_id"], text="✅ Your POP has been approved and you're now verified.")
         await update.message.reply_text(f"✅ Approved and uploaded for @{data['username']}.")
+
         del context.bot_data[f"pending_{user_id}"]
+
     except Exception as e:
-        await update.message.reply_text(f"⚠️ Error: {str(e)}")
+        await update.message.reply_text(f"⚠️ Error during approval: {str(e)}")
+
 
 async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
