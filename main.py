@@ -178,7 +178,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.set_chat_administrator_custom_title(
                     chat_id=group_id,
                     user_id=int(user_id),
-                    custom_title="✅ Verified Seller"
+                    custom_title="Verified Seller"
                 )
 
             except Exception as e:
