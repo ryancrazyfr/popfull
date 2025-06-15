@@ -154,8 +154,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_photo(
         chat_id=ADMIN_USER_ID,
         photo=open(filepath, "rb"),
-        caption=f"👀 POP from @{username}
-/approve_{user.id} or /reject_{user.id}",
+        caption=f"👀 POP from @{username}/approve_{user.id} or /reject_{user.id}",
         parse_mode="Markdown"
     )
     await update.message.reply_text("✅ POP submitted. Waiting for admin approval.")
