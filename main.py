@@ -94,8 +94,8 @@ async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.chat_data.get("expecting_photo"):
        if update.effective_message:
-    await update.effective_message.reply_text("❗ Please tap /submitpop before sending your screenshot.")
-        return
+         await update.effective_message.reply_text("❗ Please tap /submitpop before sending your screenshot.")
+         return
     context.chat_data["expecting_photo"] = False
 
     user = update.message.from_user
