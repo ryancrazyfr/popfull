@@ -88,13 +88,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_markdown(pop_links)
 
 async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.type != "private":
+        await update.message.reply_text("❗ Please DM me to submit your POP.")
+        return
+
     context.chat_data["expecting_photo"] = True
-    await update.message.reply_text("Please send your POP screenshot now.")
+    await update.message.reply_text("📸 Please send your POP screenshot now.")
+
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.type != "private":
+        return  # Ignore photos from groups
+
     if not context.chat_data.get("expecting_photo"):
         await update.message.reply_text("❗ Please tap /submitpop before sending your screenshot.")
         return
+
     context.chat_data["expecting_photo"] = False
 
     user = update.message.from_user
