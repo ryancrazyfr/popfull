@@ -157,10 +157,10 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # ✅ FIXED: Unmute with full permissions
         for group_id in GROUP_IDS:
-            try:
-               await context.bot.promote_chat_member(
-                chat_id=group_id,
-                user_id=int(user_id),
+          try:
+            await context.bot.promote_chat_member(
+                group_id,
+                int(user_id),
                 can_change_info=False,
                 can_post_messages=False,
                 can_edit_messages=False,
@@ -169,20 +169,18 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 can_restrict_members=False,
                 can_pin_messages=False,
                 can_promote_members=False,
-                can_manage_chat=False,
-                can_manage_video_chats=False,
-                can_manage_topics=False,
                 is_anonymous=False
-              )
-              await context.bot.set_chat_administrator_custom_title(
+            )
+            await context.bot.set_chat_administrator_custom_title(
                 chat_id=group_id,
                 user_id=int(user_id),
-                custom_title="Verified Seller"
-              )
+                custom_title="✅ Verified Seller"
+            )
+        except Exception as e:
+            print(f"Error promoting or titling user {user_id} in {group_id}: {e}")
 
-            except Exception as e:
-                print(f"Error unmuting user in group {group_id}: {e}")
 
+            
         await context.bot.send_message(chat_id=data["user_id"], text="✅ Your POP has been approved and logged.")
         await update.message.reply_text(f"✅ Approved and uploaded for @{data['username']}.")
         del context.bot_data[f"pending_{user_id}"]
