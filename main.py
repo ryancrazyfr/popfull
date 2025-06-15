@@ -169,7 +169,6 @@ if __name__ == "__main__":
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("poplinks", poplinks))
     app.add_handler(CommandHandler("submitpop", submitpop))
     app.add_handler(CommandHandler("runcheck", runcheck))
     app.add_handler(MessageHandler(filters.Regex(r"^/approve_\d+$"), approve))
