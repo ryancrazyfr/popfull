@@ -158,16 +158,28 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # ✅ FIXED: Unmute with full permissions
         for group_id in GROUP_IDS:
             try:
-                await context.bot.restrict_chat_member(
-                    group_id,
-                    int(user_id),
-                    permissions=ChatPermissions(
-                        can_send_messages=True,
-                        can_send_media_messages=True,
-                        can_add_web_page_previews=True,
-                        can_send_other_messages=True
-                    )
-                )
+               await context.bot.promote_chat_member(
+                chat_id=group_id,
+                user_id=int(user_id),
+                can_change_info=False,
+                can_post_messages=False,
+                can_edit_messages=False,
+                can_delete_messages=False,
+                can_invite_users=False,
+                can_restrict_members=False,
+                can_pin_messages=False,
+                can_promote_members=False,
+                can_manage_chat=False,
+                can_manage_video_chats=False,
+                can_manage_topics=False,
+                is_anonymous=False
+              )
+              await context.bot.set_chat_administrator_custom_title(
+                chat_id=group_id,
+                user_id=int(user_id),
+                custom_title="Verified Seller"
+              )
+
             except Exception as e:
                 print(f"Error unmuting user in group {group_id}: {e}")
 
@@ -209,20 +221,39 @@ async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     submitted_ids = get_all_submitted_user_ids()
 
-    for user_key in list(context.bot_data.keys()):
-        if user_key.startswith("pending_"):
-            user_id = user_key.split("_")[1]
-            if user_id not in submitted_ids:
-                for group_id in GROUP_IDS:
+    all_admins = set()
+
+    for group_id in GROUP_IDS:
+        try:
+            chat_admins = await context.bot.get_chat_administrators(group_id)
+            for admin in chat_admins:
+                uid = admin.user.id
+                if not admin.status == "creator" and str(uid) not in submitted_ids:
                     try:
+                        await context.bot.promote_chat_member(
+                            group_id,
+                            uid,
+                            can_manage_chat=False,
+                            can_post_messages=False,
+                            can_edit_messages=False,
+                            can_delete_messages=False,
+                            can_restrict_members=False,
+                            can_promote_members=False,
+                            can_change_info=False,
+                            can_invite_users=False,
+                            can_pin_messages=False,
+                            is_anonymous=False
+                        )
                         await context.bot.restrict_chat_member(
                             group_id,
-                            int(user_id),
+                            uid,
                             permissions=ChatPermissions(can_send_messages=False)
                         )
+                        print(f"Demoted and muted user {uid} in {group_id}")
                     except Exception as e:
-                        print(f"Error muting user {user_id} in group {group_id}: {e}")
-
+                        print(f"Error demoting/muting {uid} in group {group_id}: {e}")
+        except Exception as e:
+            print(f"Error fetching admins in group {group_id}: {e}")
     await update.message.reply_text("✅ Runcheck complete. Users who didn’t submit POP have been muted.")
 
 def main():
