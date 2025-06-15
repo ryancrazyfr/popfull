@@ -53,7 +53,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_markdown(welcome_msg)
 
-    pop_links = """🔗 *Do your POP here:*
+    poplinks = """🔗 *Do your POP here:*
 
 - [Sexy Baddies](https://t.me/+tGBn9q_6Z-9jMTAx)
 - [Content Hub](https://t.me/+F_BNXoMjPPhmNGEx)
@@ -62,7 +62,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 - [My Hot Friends](https://t.me/+A47SCYOy2_MzOTcx)
 - [CumSlut Paradise](https://t.me/+y5TaJPgVGvI1NzQ0)
 """
-    await update.message.reply_markdown(pop_links)
+    await update.message.reply_markdown(poplinks)
 
 async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != "private":
