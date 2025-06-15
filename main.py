@@ -113,11 +113,11 @@ async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "👋 Welcome! POP (Proof of Promo) is a screenshot showing you've shared our group links."
-        "
+        
+        """👋 Welcome! POP (Proof of Promo) is a screenshot showing you've shared our group links.
 Use /submitpop to begin.
 
-Then upload your screenshot."
+Then upload your screenshot."""
     )
 
 async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
