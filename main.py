@@ -294,7 +294,7 @@ async def test_promote(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
 
             # Try re-promoting with minimal rights
-            await context.bot.promote_chat_administrator_custom_title(
+            await context.bot.set_chat_administrator_custom_title(
                 chat_id=group_id,
                 user_id=user_id,
                 custom_title="Verified Seller"
