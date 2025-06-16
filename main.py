@@ -29,6 +29,8 @@ GROUP_IDS = [
     -1001709491100,  # Seductive Sirens
 ]
 
+REMINDER_GROUP_ID = -1001664882105
+
 if not os.path.exists(POP_DIR):
     os.makedirs(POP_DIR)
 
@@ -147,10 +149,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(f"❌ No pending submission found for user {user_id}.")
             return
 
-        # Upload file to Google Drive
         drive_link = upload_to_drive(data["username"], data["filename"], data["filepath"])
-
-        # Log to Google Sheet
         sheet.append_row([
             data["username"],
             str(data["user_id"]),
@@ -159,34 +158,27 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
             drive_link
         ])
 
-        # Promote with custom title in all groups
         for group_id in GROUP_IDS:
             try:
-                await context.bot.promote_chat_member(
+                await context.bot.restrict_chat_member(
                     group_id,
                     int(user_id),
-                    can_change_info=False,
-                    can_post_messages=False,
-                    can_edit_messages=False,
-                    can_delete_messages=False,
-                    can_invite_users=False,
-                    can_restrict_members=False,
-                    can_pin_messages=False,
-                    can_promote_members=False,
-                    is_anonymous=False
-                )   
-
+                    permissions=ChatPermissions(
+                        can_send_messages=True,
+                        can_send_media_messages=True,
+                        can_send_other_messages=True,
+                        can_add_web_page_previews=True
+                    )
+                )
             except Exception as e:
-                print(f"Error promoting or titling user {user_id} in {group_id}: {e}")
+                print(f"Error unmuting user in group {group_id}: {e}")
 
-        await context.bot.send_message(chat_id=data["user_id"], text="✅ Your POP has been approved and you're now verified.")
+        await context.bot.send_message(chat_id=data["user_id"], text="✅ Your POP has been approved and logged.")
+        await context.bot.send_message(chat_id=data["user_id"], text="✅ You have been unmuted in all promo groups. Thanks for submitting your POP!")
         await update.message.reply_text(f"✅ Approved and uploaded for @{data['username']}.")
-
         del context.bot_data[f"pending_{user_id}"]
-
     except Exception as e:
-        await update.message.reply_text(f"⚠️ Error during approval: {str(e)}")
-
+        await update.message.reply_text(f"⚠️ Error: {str(e)}")
 
 async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
@@ -220,75 +212,32 @@ async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     submitted_ids = get_all_submitted_user_ids()
 
-    all_admins = set()
-
     for group_id in GROUP_IDS:
         try:
-            chat_admins = await context.bot.get_chat_administrators(group_id)
-            for admin in chat_admins:
-                uid = admin.user.id
-                if not admin.status == "creator" and str(uid) not in submitted_ids:
+            members = await context.bot.get_chat_administrators(group_id)
+            for admin in members:
+                user_id = admin.user.id
+                if str(user_id) not in submitted_ids:
                     try:
-                        await context.bot.promote_chat_member(
-                            group_id,
-                            uid,
-                            can_manage_chat=False,
-                            can_post_messages=False,
-                            can_edit_messages=False,
-                            can_delete_messages=False,
-                            can_restrict_members=False,
-                            can_promote_members=False,
-                            can_change_info=False,
-                            can_invite_users=False,
-                            can_pin_messages=False,
-                            is_anonymous=False
-                        )
                         await context.bot.restrict_chat_member(
                             group_id,
-                            uid,
+                            user_id,
                             permissions=ChatPermissions(can_send_messages=False)
                         )
-                        print(f"Demoted and muted user {uid} in {group_id}")
+                        await context.bot.send_message(chat_id=user_id, text="🚫 You have been muted in the promo group for not submitting POP by Friday.")
                     except Exception as e:
-                        print(f"Error demoting/muting {uid} in group {group_id}: {e}")
+                        print(f"Error muting user {user_id} in group {group_id}: {e}")
         except Exception as e:
-            print(f"Error fetching admins in group {group_id}: {e}")
+            print(f"Error getting admins for group {group_id}: {e}")
+
     await update.message.reply_text("✅ Runcheck complete. Users who didn’t submit POP have been muted.")
-async def test_promote(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_USER_ID:
-        await update.message.reply_text("🚫 You are not authorized to use this command.")
-        return
 
-    if not context.args:
-        await update.message.reply_text("❗ Usage: /testpromote <username>")
-        return
+async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.send_message(
+        REMINDER_GROUP_ID,
+        "⏰ Don’t forget to submit your POP screenshot before Friday to avoid getting muted!"
+    )
 
-    username = context.args[0].lstrip('@')
-
-    for group_id in GROUP_IDS:
-        try:
-            # Get group admins to resolve username to user_id
-            member = await context.bot.get_chat_member(group_id, username)
-            user_id = member.user.id
-
-            await context.bot.promote_chat_member(
-                chat_id=group_id,
-                user_id=user_id,
-                can_manage_chat=False,
-                can_post_messages=True,
-                can_edit_messages=False,
-                can_delete_messages=False,
-                can_restrict_members=False,
-                can_promote_members=False,
-                can_change_info=False,
-                can_invite_users=False,
-                can_pin_messages=False,
-                is_anonymous=False,
-            )
-            await update.message.reply_text(f"✅ Successfully promoted @{username} in group {group_id}")
-
-        except Exception as e:
-            await update.message.reply_text(f"❌ Error in group {group_id} for @{username}: {e}")
 
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -300,6 +249,14 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+$"), approve))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+$"), reject))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+
+    # Schedule reminders for Tuesday and Thursday at 10:00 AM
+    from apscheduler.schedulers.asyncio import AsyncIOScheduler
+    from apscheduler.triggers.cron import CronTrigger
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
+    scheduler.start()
+    
     app.run_polling()
 
 if __name__ == "__main__":
