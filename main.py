@@ -304,14 +304,14 @@ async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     try:
-        response = client.ChatCompletion.create(
+        response = client.chat.completion.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a Telegram bot assistant that explains POP (Proof of Promotion) rules and process clearly."},
                 {"role": "user", "content": question}
             ]
         )
-        answer = response.choices[0].message.content
+        answer = response.choices[0].message.content.strip()
         await update.message.reply_text(f"🧠 {answer}")
     except Exception as e:
         await update.message.reply_text(f"⚠️ Error: {e}")
