@@ -276,8 +276,6 @@ async def test_promote(update: Update, context: ContextTypes.DEFAULT_TYPE):
             member = await context.bot.get_chat_member(group_id, username)
             user_id = member.user.id
 
-
-            # Try demoting
             await context.bot.promote_chat_member(
                 chat_id=group_id,
                 user_id=user_id,
@@ -293,7 +291,7 @@ async def test_promote(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 is_anonymous=False,
             )
 
-            # Try re-promoting with minimal rights
+            
             await context.bot.set_chat_administrator_custom_title(
                 chat_id=group_id,
                 user_id=user_id,
