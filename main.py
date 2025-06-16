@@ -174,10 +174,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     can_pin_messages=False,
                     can_promote_members=False,
                     is_anonymous=False
-                )
-
-                
-                )
+                )   
 
             except Exception as e:
                 print(f"Error promoting or titling user {user_id} in {group_id}: {e}")
@@ -288,14 +285,6 @@ async def test_promote(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 can_pin_messages=False,
                 is_anonymous=False,
             )
-
-            await asyncio.sleep(1)
-            await context.bot.set_chat_administrator_custom_title(
-                chat_id=group_id,
-                user_id=user_id,
-                custom_title="Verified Seller"
-            )
-
             await update.message.reply_text(f"✅ Successfully promoted @{username} in group {group_id}")
 
         except Exception as e:
