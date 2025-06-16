@@ -304,7 +304,7 @@ async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     try:
-        response = client.chat.completion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a Telegram bot assistant that explains POP (Proof of Promotion) rules and process clearly."},
