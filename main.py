@@ -15,9 +15,9 @@ import re
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-import openai
+from openai import OpenAI
 
-openai.api_key = os.environ["OPENAI_API_KEY"]
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 
 BOT_TOKEN = os.environ['BOT_TOKEN']
@@ -304,7 +304,7 @@ async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     try:
-        response = openai.ChatCompletion.create(
+        response = client.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a Telegram bot assistant that explains POP (Proof of Promotion) rules and process clearly."},
