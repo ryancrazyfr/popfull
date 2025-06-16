@@ -12,6 +12,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import re
+import asyncio
 
 BOT_TOKEN = os.environ['BOT_TOKEN']
 GOOGLE_JSON = os.environ['GOOGLE_JSON']
@@ -291,7 +292,7 @@ async def test_promote(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 is_anonymous=False,
             )
 
-            
+            await asyncio.sleep(1)
             await context.bot.set_chat_administrator_custom_title(
                 chat_id=group_id,
                 user_id=user_id,
