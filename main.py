@@ -13,6 +13,8 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import re
 import asyncio
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 
 BOT_TOKEN = os.environ['BOT_TOKEN']
@@ -238,10 +240,14 @@ async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
         REMINDER_GROUP_ID,
         "⏰ Don’t forget to submit your POP screenshot before Friday to avoid getting muted!"
     )
-
+scheduler = AsyncIOScheduler()
+async def on_startup(app):
+    scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
+    scheduler.start()
+    print("Scheduler started")
 
 def main():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("submitpop", submitpop))
     app.add_handler(CommandHandler("getid", getid))
@@ -249,13 +255,6 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+$"), approve))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+$"), reject))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-
-    # Schedule reminders for Tuesday and Thursday at 10:00 AM
-    from apscheduler.schedulers.asyncio import AsyncIOScheduler
-    from apscheduler.triggers.cron import CronTrigger
-    scheduler = AsyncIOScheduler()
-    scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
-    scheduler.start()
     
     app.run_polling()
 
