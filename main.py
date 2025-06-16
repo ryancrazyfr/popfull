@@ -15,6 +15,9 @@ import re
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+import openai
+
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
 BOT_TOKEN = os.environ['BOT_TOKEN']
@@ -288,7 +291,30 @@ async def mute_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             await update.message.reply_text(f"❌ Error muting @{username} in {group_id}: {e}")
 
+async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.message.reply_text("❓ Please ask a question after the command. Example:\n/ask What is POP?")
+        return
 
+    question = " ".join(context.args)
+
+    # Prompt restriction
+    if "pop" not in question.lower():
+        await update.message.reply_text("❌ I only answer questions about POP. Please rephrase.")
+        return
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a Telegram bot assistant that explains POP (Proof of Promotion) rules and process clearly."},
+                {"role": "user", "content": question}
+            ]
+        )
+        answer = response.choices[0].message.content
+        await update.message.reply_text(f"🧠 {answer}")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Error: {e}")
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
     app.add_handler(CommandHandler("start", start))
@@ -299,6 +325,8 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+$"), reject))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     app.add_handler(CommandHandler("muteuser", mute_user))
+    app.add_handler(CommandHandler("ask", ask))
+
 
     
     app.run_polling()
