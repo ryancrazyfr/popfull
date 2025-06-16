@@ -245,7 +245,6 @@ def main():
     app.add_handler(CommandHandler("submitpop", submitpop))
     app.add_handler(CommandHandler("getid", getid))
     app.add_handler(CommandHandler("runcheck", runcheck))
-    app.add_handler(CommandHandler("testpromote", test_promote))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+$"), approve))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+$"), reject))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
