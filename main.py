@@ -259,6 +259,57 @@ async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             print(f"Error fetching admins in group {group_id}: {e}")
     await update.message.reply_text("✅ Runcheck complete. Users who didn’t submit POP have been muted.")
+async def test_promote(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_USER_ID:
+        await update.message.reply_text("🚫 You are not authorized to use this command.")
+        return
+
+    if not context.args:
+        await update.message.reply_text("❗ Usage: /testpromote <username>")
+        return
+
+    username = context.args[0].lstrip('@')
+
+    for group_id in GROUP_IDS:
+        try:
+            # Get group admins to resolve username to user_id
+            admins = await context.bot.get_chat_administrators(group_id)
+            user = next((a.user for a in admins if a.user.username == username), None)
+
+            if not user:
+                await update.message.reply_text(f"❌ @{username} is not an admin in group {group_id}")
+                continue
+
+            user_id = user.id
+
+            # Try demoting
+            await context.bot.promote_chat_member(
+                chat_id=group_id,
+                user_id=user_id,
+                can_manage_chat=False,
+                can_post_messages=False,
+                can_edit_messages=False,
+                can_delete_messages=False,
+                can_restrict_members=False,
+                can_promote_members=False,
+                can_change_info=False,
+                can_invite_users=False,
+                can_pin_messages=False,
+                is_anonymous=False,
+            )
+
+            # Try re-promoting with minimal rights
+            await context.bot.promote_chat_member(
+                chat_id=group_id,
+                user_id=user_id,
+                can_post_messages=True,
+                is_anonymous=False,
+            )
+
+            await update.message.reply_text(f"✅ Successfully promoted/demoted @{username} in group {group_id}")
+
+        except Exception as e:
+            await update.message.reply_text(f"❌ Error in group {group_id} for @{username}: {e}")
 
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -266,6 +317,7 @@ def main():
     app.add_handler(CommandHandler("submitpop", submitpop))
     app.add_handler(CommandHandler("getid", getid))
     app.add_handler(CommandHandler("runcheck", runcheck))
+    app.add_handler(CommandHandler("testpromote", test_promote))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+$"), approve))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+$"), reject))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
