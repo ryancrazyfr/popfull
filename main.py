@@ -270,41 +270,38 @@ async def test_promote(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     username = context.args[0].lstrip('@')
 
-    for group_id in GROUP_IDS:
-        try:
-            # Get group admins to resolve username to user_id
-            admins = await context.bot.get_chat_administrators(group_id)
-            user = next((a.user for a in admins if a.user.username == username), None)
+for group_id in GROUP_IDS:
+    try:
+        # Resolve user_id from username (even if not admin)
+        member = await context.bot.get_chat_member(group_id, username)
+        user_id = member.user.id
 
-            if not user:
-                await update.message.reply_text(f"❌ @{username} is not an admin in group {group_id}")
-                continue
+        # Promote user
+        await context.bot.promote_chat_member(
+            chat_id=group_id,
+            user_id=user_id,
+            can_manage_chat=False,
+            can_post_messages=True,
+            can_edit_messages=False,
+            can_delete_messages=False,
+            can_restrict_members=False,
+            can_promote_members=False,
+            can_change_info=False,
+            can_invite_users=False,
+            can_pin_messages=False,
+            is_anonymous=False,
+        )
 
-            user_id = user.id
+        await context.bot.set_chat_administrator_custom_title(
+            chat_id=group_id,
+            user_id=user_id,
+            custom_title="✅ Verified Seller"
+        )
 
-            # Try demoting
-            await context.bot.promote_chat_member(
-                chat_id=group_id,
-                user_id=user_id,
-                can_manage_chat=False,
-                can_post_messages=False,
-                can_edit_messages=False,
-                can_delete_messages=False,
-                can_restrict_members=False,
-                can_promote_members=False,
-                can_change_info=False,
-                can_invite_users=False,
-                can_pin_messages=False,
-                is_anonymous=False,
-            )
+        await update.message.reply_text(f"✅ Promoted @{username} in group {group_id}")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error in group {group_id} for @{username}: {e}")
 
-            # Try re-promoting with minimal rights
-            await context.bot.promote_chat_member(
-                chat_id=group_id,
-                user_id=user_id,
-                can_post_messages=True,
-                is_anonymous=False,
-            )
 
             await update.message.reply_text(f"✅ Successfully promoted/demoted @{username} in group {group_id}")
 
