@@ -17,7 +17,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from openai
 
-openai.api_key = os.environ["OPENAI_API_KEY"])
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
 BOT_TOKEN = os.environ['BOT_TOKEN']
