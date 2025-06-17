@@ -307,7 +307,9 @@ async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
         response = openai.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "user", "content": "What is POP"}
+                {"role": "system", "content": "You are a Telegram bot that helps users understand POP (Proof of Promotion), a process where content sellers prove that they promoted a group or channel by submitting a screenshot. Answer all questions based on this meaning of POP."},
+                {"role": "user", "content": question}
+
             ]
         )
         answer = response.choices[0].message.content.strip()
