@@ -15,6 +15,7 @@ import re
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from datetime import datetime
 import openai
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
@@ -49,9 +50,27 @@ drive_creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build("drive", "v3", credentials=drive_creds)
 
 # Store approved users each week
-def get_all_submitted_user_ids():
+def get_all_submitted_user_ids(sheet):
     records = sheet.get_all_records()
-    return {str(row['User ID']) for row in records if 'User ID' in row}
+    submitted_ids = set()
+
+    start_of_week = datetime(2025, 6, 20)
+
+    for row in records:
+        try:
+            # Combine Date + Time
+            date_str = row["Date"]
+            time_str = row["Time"]
+            timestamp = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
+
+            # Add user if submitted after June 20
+            if timestamp >= start_of_week:
+                submitted_ids.add(str(row["User ID"]))
+
+        except Exception as e:
+            print(f"Skipping row due to error: {e}")
+    
+    return submitted_ids
 
 def get_or_create_user_folder(username):
     if not username:
