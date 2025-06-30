@@ -15,7 +15,7 @@ import re
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from datetime import datetime
+from datetime import datetime, timedelta
 import openai
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
@@ -48,6 +48,12 @@ client = gspread.authorize(sheets_creds)
 sheet = client.open(SHEET_NAME).sheet1
 drive_creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build("drive", "v3", credentials=drive_creds)
+
+def get_last_friday():
+    today = datetime.today()
+    offset = (today.weekday() - 4) % 7  # Friday is weekday 4
+    last_friday = today - timedelta(days=offset)
+    return datetime.combine(last_friday.date(), datetime.min.time())
 
 
 def get_all_submitted_user_ids(sheet):
