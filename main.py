@@ -349,7 +349,7 @@ def main():
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     app.add_handler(CommandHandler("muteuser", mute_user))
     app.add_handler(CommandHandler("ask", ask))
-    app.add_handler(MessageHandler(filters.ALL, track_user))
+    
 
 
 
