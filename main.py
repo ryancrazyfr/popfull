@@ -72,16 +72,6 @@ def upload_to_drive(username, filename, filepath):
     uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields="id, webViewLink").execute()
     return uploaded_file.get("webViewLink")
     
-def load_tracked_users():
-    if not os.path.exists(TRACKED_USERS_FILE):
-        return set()
-    with open(TRACKED_USERS_FILE, "r") as f:
-        return set(json.load(f))
-
-def save_tracked_users(user_ids):
-    with open(TRACKED_USERS_FILE, "w") as f:
-        json.dump(list(user_ids), f)
-
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     welcome_msg = (
@@ -224,23 +214,21 @@ async def getid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"🆔 This group is *{title}*\nChat ID: `{chat_id}`", parse_mode="Markdown")
 
 async def track_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    tracked = load_tracked_users()
-    tracked.add(user_id)
-    save_tracked_users(tracked)
-    await update.message.reply_text("👋 You're now being tracked for POP submission monitoring.")
-
+    user_id = str(update.effective_user.id)
+    if "all_users" not in context.bot_data:
+        context.bot_data["all_users"] = set()
+    context.bot_data["all_users"].add(user_id)
 
 async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_USER_ID:
         return
 
     submitted_ids = get_all_submitted_user_ids()
-    tracked_users = load_tracked_users()
+    all_users = context.bot_data.get("all_users", set())
 
 
     for group_id in GROUP_IDS:
-        for user_id in tracked_users:
+        for user_id in all_users:
             if user_id not in submitted_ids:
                 try:
                     await context.bot.restrict_chat_member(
