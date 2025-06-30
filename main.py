@@ -71,6 +71,17 @@ def upload_to_drive(username, filename, filepath):
     media = MediaFileUpload(filepath, mimetype="image/jpeg")
     uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields="id, webViewLink").execute()
     return uploaded_file.get("webViewLink")
+    
+def load_tracked_users():
+    if not os.path.exists(TRACKED_USERS_FILE):
+        return set()
+    with open(TRACKED_USERS_FILE, "r") as f:
+        return set(json.load(f))
+
+def save_tracked_users(user_ids):
+    with open(TRACKED_USERS_FILE, "w") as f:
+        json.dump(list(user_ids), f)
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     welcome_msg = (
@@ -212,29 +223,38 @@ async def getid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     title = update.effective_chat.title
     await update.message.reply_text(f"🆔 This group is *{title}*\nChat ID: `{chat_id}`", parse_mode="Markdown")
 
+async def track_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    tracked = load_tracked_users()
+    tracked.add(user_id)
+    save_tracked_users(tracked)
+    await update.message.reply_text("👋 You're now being tracked for POP submission monitoring.")
+
+
 async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_USER_ID:
         return
 
     submitted_ids = get_all_submitted_user_ids()
+    tracked_users = load_tracked_users()
+
 
     for group_id in GROUP_IDS:
-        try:
-            members = await context.bot.get_chat_administrators(group_id)
-            for admin in members:
-                user_id = admin.user.id
-                if str(user_id) not in submitted_ids:
-                    try:
-                        await context.bot.restrict_chat_member(
-                            group_id,
-                            user_id,
-                            permissions=ChatPermissions(can_send_messages=False)
-                        )
-                        await context.bot.send_message(chat_id=user_id, text="🚫 You have been muted in the promo group for not submitting POP by Friday.")
-                    except Exception as e:
-                        print(f"Error muting user {user_id} in group {group_id}: {e}")
-        except Exception as e:
-            print(f"Error getting admins for group {group_id}: {e}")
+        for user_id in tracked_users:
+            if user_id not in submitted_ids:
+                try:
+                    await context.bot.restrict_chat_member(
+                        group_id,
+                        int(user_id),
+                        permissions=ChatPermissions(can_send_messages=False)
+                    )
+                    await context.bot.send_message(
+                        chat_id=user_id,
+                        text="⛔ You’ve been muted in the group for not submitting POP!"
+                    )
+                except Exception as e:
+                    print(f"Error muting {user_id} in {group_id}: {e}")
+
 
     await update.message.reply_text("✅ Runcheck complete. Users who didn’t submit POP have been muted.")
 
@@ -327,6 +347,8 @@ def main():
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     app.add_handler(CommandHandler("muteuser", mute_user))
     app.add_handler(CommandHandler("ask", ask))
+    app.add_handler(MessageHandler(filters.ALL, track_user))
+
 
 
     
