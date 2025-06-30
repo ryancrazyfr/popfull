@@ -49,28 +49,26 @@ sheet = client.open(SHEET_NAME).sheet1
 drive_creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build("drive", "v3", credentials=drive_creds)
 
-# Store approved users each week
+
 def get_all_submitted_user_ids(sheet):
     records = sheet.get_all_records()
     submitted_ids = set()
 
-    start_of_week = datetime(2025, 6, 20)
+    start_of_week = get_last_friday()
 
     for row in records:
         try:
-            # Combine Date + Time
             date_str = row["Date"]
             time_str = row["Time"]
             timestamp = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
 
-            # Add user if submitted after June 20
             if timestamp >= start_of_week:
                 submitted_ids.add(str(row["User ID"]))
-
         except Exception as e:
             print(f"Skipping row due to error: {e}")
-    
+
     return submitted_ids
+
 
 def get_or_create_user_folder(username):
     if not username:
@@ -232,22 +230,20 @@ async def getid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     title = update.effective_chat.title
     await update.message.reply_text(f"🆔 This group is *{title}*\nChat ID: `{chat_id}`", parse_mode="Markdown")
 
-async def track_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = str(update.effective_user.id)
-    if "all_users" not in context.bot_data:
-        context.bot_data["all_users"] = set()
-    context.bot_data["all_users"].add(user_id)
+
+def get_all_tracked_user_ids(sheet):
+    records = sheet.get_all_records()
+    return {str(row["User ID"]) for row in records if "User ID" in row}
 
 async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_USER_ID:
         return
 
-    submitted_ids = get_all_submitted_user_ids()
-    all_users = context.bot_data.get("all_users", set())
-
+    submitted_ids = get_all_submitted_user_ids(sheet)
+    tracked_users = get_all_tracked_user_ids(sheet)
 
     for group_id in GROUP_IDS:
-        for user_id in all_users:
+        for user_id in tracked_users:
             if user_id not in submitted_ids:
                 try:
                     await context.bot.restrict_chat_member(
@@ -257,13 +253,12 @@ async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
                     await context.bot.send_message(
                         chat_id=user_id,
-                        text="⛔ You’ve been muted in the group for not submitting POP!"
+                        text="🔇 You’ve been muted in the group for not submitting POP!"
                     )
                 except Exception as e:
-                    print(f"Error muting {user_id} in {group_id}: {e}")
+                    print(f"❌ Error muting {user_id} in {group_id}: {e}")
 
-
-    await update.message.reply_text("✅ Runcheck complete. Users who didn’t submit POP have been muted.")
+    await update.message.reply_text("✅ Runcheck complete. Users who didn’t submit POP since last Friday have been muted.")
 
 async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
