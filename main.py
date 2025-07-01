@@ -274,7 +274,7 @@ async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
 scheduler = AsyncIOScheduler()
 async def on_startup(app):
     scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
-    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed", hour=8, minute=0),args=[context],timezone="UTC")
+    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed", hour=8, minute=0),timezone="UTC")
     scheduler.start()
     print("Scheduler started")
 
