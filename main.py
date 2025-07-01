@@ -248,20 +248,21 @@ async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
     submitted_ids = get_all_submitted_user_ids(sheet)
     tracked_users = get_all_tracked_user_ids(sheet)
 
-    for group_id in GROUP_IDS:
-        for user_id in tracked_users:
-            if user_id not in submitted_ids:
-                try:
-                    await context.bot.restrict_chat_member(
+    
+    for user_id in tracked_users:
+        if user_id not in submitted_ids:
+            try:
+              for group_id in GROUP_IDS:
+                await context.bot.restrict_chat_member(
                         group_id,
                         int(user_id),
                         permissions=ChatPermissions(can_send_messages=False)
                     )
-                    await context.bot.send_message(
+                await context.bot.send_message(
                         chat_id=user_id,
                         text="🔇 You’ve been muted in the group for not submitting POP!"
                     )
-                except Exception as e:
+              except Exception as e:
                     print(f"❌ Error muting {user_id} in {group_id}: {e}")
 
     await update.message.reply_text("✅ Runcheck complete. Users who didn’t submit POP since last Friday have been muted.")
