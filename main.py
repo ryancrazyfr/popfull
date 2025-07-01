@@ -335,8 +335,10 @@ async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.send_message(
                     chat_id=int(user_id),
                     text=(
-                        "🚨 *Reminder*: You haven't submitted your POP for this week!\n\n"
-                        "Please promote the groups and send your screenshot or recording using /submitpop.\n\n"
+                        "📌 *Reminder*: You haven't submitted your POP for this week!\n\n"
+                        "Please promote the groups and send your screenshot using:\n"
+                        "`/submitpop`\n\n"
+                        "💬 If you face any issues, DM [@sexydolladmin](https://t.me/sexydolladmin)\n\n"
                         f"{pop_links}"
                     ),
                     parse_mode='Markdown',
