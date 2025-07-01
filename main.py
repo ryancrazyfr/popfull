@@ -284,7 +284,7 @@ async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
         print("❌ Google Sheet not loaded.")
         return
 
-    submitted_ids = get_recent_submitters(sheet)
+    submitted_ids =  get_all_submitted_user_ids(sheet)
     tracked_users = get_all_tracked_user_ids(sheet)
 
     for user_id in tracked_users:
