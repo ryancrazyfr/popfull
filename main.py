@@ -270,7 +270,7 @@ async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(f"❌ No pending submission found for user {user_id}.")
             return
 
-        await context.bot.send_message(chat_id=data["user_id"], text="❌ Your POP has been rejected by admin.")
+        await context.bot.send_message(chat_id=data["user_id"], text="❌ Your POP has been rejected. Please dm @sexydolladmin")
         await update.message.reply_text(f"🚫 Rejected submission from @{data['username']}.")
         del context.bot_data[f"pending_{user_id}"]
     except Exception as e:
