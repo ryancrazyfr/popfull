@@ -148,6 +148,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.chat_data["expecting_photo"] = False
 
 
+
     user = update.message.from_user
     username = user.username or f"user_{user.id}"
     photo = update.message.photo[-1]
@@ -173,6 +174,40 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     await update.message.reply_text("📤 POP submitted! Waiting for admin approval.")
+
+async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.chat_data.get("expecting_photo"):
+        await update.message.reply_text("❗ Please tap /submitpop before sending your screen recording.")
+        return
+
+    context.chat_data["expecting_photo"] = False
+    user = update.message.from_user
+    username = user.username or f"user_{user.id}"
+    video = update.message.video
+    file = await video.get_file()
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    filename = f"{username}_{timestamp}.mp4"
+    filepath = os.path.join(POP_DIR, filename)
+    await file.download_to_drive(filepath)
+
+    # Save for approval
+    context.bot_data[f"pending_{user.id}"] = {
+        "username": username,
+        "user_id": user.id,
+        "filename": filename,
+        "filepath": filepath,
+        "timestamp": timestamp
+    }
+
+    await context.bot.send_video(
+        chat_id=ADMIN_USER_ID,
+        video=open(filepath, "rb"),
+        caption=f"📹 *POP Video Submission from @{username}*\n\nApprove this recording?\nReply with /approve_{user.id} or /reject_{user.id}",
+        parse_mode="Markdown"
+    )
+
+    await update.message.reply_text("📤 Screen recording POP submitted! Waiting for admin approval.")
+
 
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
@@ -395,6 +430,8 @@ def main():
     app.add_handler(CommandHandler("muteuser", mute_user))
     app.add_handler(CommandHandler("ask", ask))
     app.add_handler(CommandHandler("testreminder", test_pop_reminder))
+    app.add_handler(MessageHandler(filters.VIDEO, handle_video))
+
     
 
 
