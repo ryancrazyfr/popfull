@@ -290,11 +290,7 @@ async def on_startup(app):
     print("Scheduler started")
 
 async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
-    sheet = context.bot_data.get("sheet")
-    if not sheet:
-        print("❌ Google Sheet not loaded.")
-        return
-
+   
     submitted_ids =  get_all_submitted_user_ids(sheet)
     tracked_users = get_all_tracked_user_ids(sheet)
 
