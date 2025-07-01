@@ -274,7 +274,7 @@ async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
 scheduler = AsyncIOScheduler()
 async def on_startup(app):
     scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
-    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed", hour=8, minute=0),timezone="UTC")
+    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed", hour=8, minute=0),args=[app],timezone="UTC")
     scheduler.start()
     print("Scheduler started")
 
@@ -302,6 +302,11 @@ async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
                 )
             except Exception as e:
                 print(f"⚠️ Failed to remind user {user_id}: {e}")
+                
+
+async def test_pop_reminder(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await send_pop_reminder(context)
+    await update.message.reply_text("✅ POP reminder sent manually.")
 
     
 async def mute_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -382,6 +387,7 @@ def main():
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     app.add_handler(CommandHandler("muteuser", mute_user))
     app.add_handler(CommandHandler("ask", ask))
+    app.add_handler(CommandHandler("testreminder", test_pop_reminder))
     
 
 
