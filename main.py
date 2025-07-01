@@ -110,11 +110,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     welcome_msg = (
         "👋 Welcome to the POP Bot!\n\n"
         "📌 *What is POP?*\n"
-        "POP (Proof of Promo) is a screenshot you take after promoting our group links "
+        "POP (Proof of Promo) is a screenshot or recording you take after promoting our group links "
         "on your own channel or another platform. It helps keep our traffic strong!\n\n"
         "🛠 To submit your weekly POP:\n"
         "1. Tap /submitpop\n"
-        "2. Upload your screenshot\n\n"
+        "2. Upload your screenshot or recording\n\n"
         "📎 Below are the group links you need to promote 👇"
     )
     await update.message.reply_markdown(welcome_msg)
@@ -132,7 +132,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.chat_data["expecting_photo"] = True
-    await update.message.reply_text("Please send your POP screenshot now.")
+    await update.message.reply_text("Please send your POP now.")
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Ignore photos from groups
@@ -141,7 +141,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Only respond if expecting a photo
     if not context.chat_data.get("expecting_photo"):
-        await update.message.reply_text("❗ Please tap /submitpop before sending your screenshot.")
+        await update.message.reply_text("❗ Please tap /submitpop before sending your pop.")
         return
 
     # Reset state
@@ -336,7 +336,7 @@ async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
                     chat_id=int(user_id),
                     text=(
                         "🚨 *Reminder*: You haven't submitted your POP for this week!\n\n"
-                        "Please promote the groups and send your screenshot using /submitpop.\n\n"
+                        "Please promote the groups and send your screenshot or recording using /submitpop.\n\n"
                         f"{pop_links}"
                     ),
                     parse_mode='Markdown',
