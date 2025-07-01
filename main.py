@@ -262,7 +262,7 @@ async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         chat_id=user_id,
                         text="🔇 You’ve been muted in the group for not submitting POP!"
                     )
-              except Exception as e:
+            except Exception as e:
                     print(f"❌ Error muting {user_id} in {group_id}: {e}")
 
     await update.message.reply_text("✅ Runcheck complete. Users who didn’t submit POP since last Friday have been muted.")
