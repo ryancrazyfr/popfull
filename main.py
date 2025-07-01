@@ -109,7 +109,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_markdown(welcome_msg)
 
-    pop_links = """🔗 *Do your POP here:*
+    pop_links = """🔗 *Use these links for POP :*
 
 - [Sexy Baddies](https://t.me/+tGBn9q_6Z-9jMTAx)
 - [Content Hub](https://t.me/+F_BNXoMjPPhmNGEx)
@@ -274,8 +274,36 @@ async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
 scheduler = AsyncIOScheduler()
 async def on_startup(app):
     scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
+    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed", hour=8, minute=0),args=[context],timezone="UTC")
     scheduler.start()
     print("Scheduler started")
+g
+
+async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
+    sheet = context.bot_data.get("sheet")
+    if not sheet:
+        print("❌ Google Sheet not loaded.")
+        return
+
+    submitted_ids = get_recent_submitters(sheet)
+    tracked_users = get_all_tracked_user_ids(sheet)
+
+    for user_id in tracked_users:
+        if user_id not in submitted_ids:
+            try:
+                await context.bot.send_message(
+                    chat_id=int(user_id),
+                    text=(
+                        "🚨 *Reminder*: You haven't submitted your POP for this week!\n\n"
+                        "Please promote the groups and send your screenshot using /submitpop.\n\n"
+                        f"{pop_links}"
+                    ),
+                    parse_mode='Markdown',
+                    disable_web_page_preview=True
+                )
+            except Exception as e:
+                print(f"⚠️ Failed to remind user {user_id}: {e}")
+
     
 async def mute_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_USER_ID:
