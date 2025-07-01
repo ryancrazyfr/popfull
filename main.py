@@ -277,7 +277,6 @@ async def on_startup(app):
     scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed", hour=8, minute=0),args=[context],timezone="UTC")
     scheduler.start()
     print("Scheduler started")
-g
 
 async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
     sheet = context.bot_data.get("sheet")
