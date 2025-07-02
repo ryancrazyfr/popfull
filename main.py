@@ -120,6 +120,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📎 Below are the group links you need to promote 👇"
     )
     await update.message.reply_markdown(welcome_msg)
+          
 
     pop_links = """🔗 *Use these links for POP :*
 
@@ -130,7 +131,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 - [My Hot Friends](https://t.me/+A47SCYOy2_MzOTcx)
 - [CumSlut Paradise](https://t.me/+y5TaJPgVGvI1NzQ0)
 """
-    await update.message.reply_markdown(pop_links)
+    await update.message.reply_markdown(pop_links,disable_web_page_preview=True)
+          
 
 async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.chat_data["expecting_photo"] = True
