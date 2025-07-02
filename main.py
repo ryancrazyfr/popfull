@@ -176,6 +176,10 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📤 POP submitted! Waiting for admin approval.")
 
 async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    
+    if update.effective_chat.type != "private":
+        return
+    
     if not context.chat_data.get("expecting_photo"):
         await update.message.reply_text("❗ Please tap /submitpop before sending your screen recording.")
         return
