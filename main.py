@@ -108,7 +108,7 @@ def upload_to_drive(username, filename, filepath):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     welcome_msg = (
-        "👋 Hello! Welcome to the Pop Bot of Silk and Sin Network"\n\n
+        "👋 Hello! Welcome to the Pop Bot of Silk and Sin Network.\n\n"
         "This bot is the new way of submitting POP – simple, automated, and efficient.\n\n" 
         "🚀 If you want a custom bot like this built for your group or business, contact @sexydolladm\n\n"
         "📌 *What is POP?*\n"
