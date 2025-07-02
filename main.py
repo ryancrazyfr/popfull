@@ -110,11 +110,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     welcome_msg = (
         "👋 Hello! Welcome to the Pop Bot of Silk and Sin Network.\n\n"
         "This bot is the new way of submitting POP – simple, automated, and efficient.\n\n" 
-        "🚀 If you want a custom bot like this built for your group or business, contact @sexydolladm\n\n"
+        "🚀 If you want a custom bot like this built for your group or business, contact @sexydolladmin\n\n"
         "📌 *What is POP?*\n"
         "POP (Proof of Promo) is a screenshot or recording you take after promoting our group links "
         "on your own channel or another platform. It helps keep our traffic strong!\n\n"
-        "🛠 To submit your weekly POP:\n"
+        "🛠 To submit your weekly POP:\n\n"
         "1. Tap /submitpop\n"
         "2. Upload your screenshot or recording\n\n"
         "📎 Below are the group links you need to promote 👇"
