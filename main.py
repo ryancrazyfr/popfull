@@ -116,7 +116,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "on your own channel or another platform. It helps keep our traffic strong!\n\n"
         "🛠 To submit your weekly POP:\n\n"
         "1. Tap /submitpop\n"
-        "2. Send your POP\n\n"
+        "2. Send your POP to this bot\n"
+        "3. wait for admin approval\n"
+        "4. if your pop is rejected, please send again\n\n"
         "POP is due on every Friday\n\n"
         "📎 Below are the group links you need to promote 👇"
         
