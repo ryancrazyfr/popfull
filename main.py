@@ -330,7 +330,7 @@ async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
 scheduler = AsyncIOScheduler()
 async def on_startup(app):
     scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
-    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed", hour=8, minute=0),args=[app],timezone="UTC")
+    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed,thu,fri", hour=8, minute=0),args=[app],timezone="UTC")
     scheduler.start()
     print("Scheduler started")
 
@@ -349,8 +349,14 @@ async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
                         "Please promote the groups and send your screenshot using:\n"
                         "`/submitpop`\n\n"
                         "💬 If you face any issues, DM [@sexydolladmin](https://t.me/sexydolladmin)\n\n"
-                        f"{pop_links}"
+                    
                     ),
+                    parse_mode='Markdown',
+                )
+                # Second message: Group links
+                await context.bot.send_message(
+                    chat_id=int(user_id),
+                    text=pop_links,  # Assuming this is a string of links
                     parse_mode='Markdown',
                     disable_web_page_preview=True
                 )
