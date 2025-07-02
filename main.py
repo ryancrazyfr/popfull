@@ -117,7 +117,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🛠 To submit your weekly POP:\n\n"
         "1. Tap /submitpop\n"
         "2. Upload your screenshot or recording\n\n"
+        "POP is due on every Friday\n\n"
         "📎 Below are the group links you need to promote 👇"
+        
     )
     await update.message.reply_markdown(welcome_msg)
           
