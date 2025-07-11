@@ -25,7 +25,7 @@ BOT_TOKEN = os.environ['BOT_TOKEN']
 GOOGLE_JSON = os.environ['GOOGLE_JSON']
 SHEET_NAME = "POP Submissions"
 POP_DIR = "pop_submissions"
-DRIVE_FOLDER_ID = "1GvJdGDW7ZZPTyhbxNW-W9P1J94unyGvp"
+DRIVE_FOLDER_ID = "1f63NmpGcktoNdEsy25OQsYvcfJeO5vpP"
 ADMIN_USER_ID = 6276794389
 
 GROUP_IDS = [
