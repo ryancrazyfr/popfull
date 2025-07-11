@@ -89,20 +89,45 @@ def get_all_submitted_user_ids(sheet):
 def get_or_create_user_folder(username):
     if not username:
         return DRIVE_FOLDER_ID
+
     query = f"name = '{username}' and mimeType = 'application/vnd.google-apps.folder' and '{DRIVE_FOLDER_ID}' in parents"
-    response = drive_service.files().list(q=query, spaces='drive', fields="files(id, name)").execute()
+    response = drive_service.files().list(
+        q=query,
+        spaces='drive',
+        fields='files(id, name)',
+        supportsAllDrives=True,  # ✅ Add this
+        includeItemsFromAllDrives=True  # ✅ And this
+    ).execute()
+
     files = response.get("files", [])
     if files:
         return files[0]["id"]
-    file_metadata = {"name": username, "mimeType": "application/vnd.google-apps.folder", "parents": [DRIVE_FOLDER_ID]}
-    folder = drive_service.files().create(body=file_metadata, fields="id").execute()
+
+    file_metadata = {
+        "name": username,
+        "mimeType": "application/vnd.google-apps.folder",
+        "parents": [DRIVE_FOLDER_ID]
+    }
+    folder = drive_service.files().create(
+        body=file_metadata,
+        fields="id",
+        supportsAllDrives=True  # ✅ Add this
+    ).execute()
+
     return folder.get("id")
 
 def upload_to_drive(username, filename, filepath):
     folder_id = get_or_create_user_folder(username or "unknown")
     file_metadata = {"name": filename, "parents": [folder_id]}
     media = MediaFileUpload(filepath, mimetype="image/jpeg")
-    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields="id, webViewLink").execute()
+    
+    uploaded_file = drive_service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields="id, webViewLink",
+        supportsAllDrives=True   # ✅ Required for shared drives
+    ).execute()
+    
     return uploaded_file.get("webViewLink")
     
 
