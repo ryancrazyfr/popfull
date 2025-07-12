@@ -457,6 +457,28 @@ async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"⚠️ Error: {e}")
 
+def get_duration_label(delta: timedelta) -> str:
+    hours = delta.total_seconds() / 3600
+    if hours == 24:
+        return "24 Hours"
+    elif hours == 72:
+        return "3 Days"
+    elif hours == 168:
+        return "1 Week"
+    elif hours >= 672:  # 28 days
+        return "1 Month"
+    else:
+        return "Unknown"
+
+def get_price(duration: str) -> int:
+    prices = {
+        "24 Hours": 35,
+        "3 Days": 90,
+        "1 Week": 250,
+        "1 Month": 600
+    }
+    return prices.get(duration, 0)
+
 
 async def vip_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
@@ -479,6 +501,8 @@ async def vip_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         start_time = datetime.now()
         end_time = start_time + delta
+        duration_label = get_duration_label(delta)
+        price = get_price(duration_label)
         username = update.message.from_user.username or "unknown"
 
         # Add to Google Sheet (VIP_Users sheet)
@@ -488,7 +512,9 @@ async def vip_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
             username,
             start_time.strftime("%Y-%m-%d %H:%M:%S"),
             end_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "FALSE"
+            "FALSE",
+            duration_label,
+            price
         ])
 
         
