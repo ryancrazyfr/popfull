@@ -41,12 +41,12 @@ REMINDER_GROUP_ID = -1001664882105
 
 pop_links = """🔗 *Use these links for POP :*
 
-- Sexy Baddies: t.me/+tGBn9q_6Z-9jMTAx  
-- Content Hub: t.me/+F_BNXoMjPPhmNGEx  
-- Seductive Sirens: t.me/+nvm1zwZz7FA1MTdh  
-- The Sluts Store: t.me/+pkxiRKn2ZvcyMjI8  
-- My Hot Friends: t.me/+A47SCYOy2_MzOTcx  
-- CumSlut Paradise: t.me/+y5TaJPgVGvI1NzQ0  
+- *Sexy Baddies*\nt.me/+tGBn9q_6Z-9jMTAx  
+- *Content Hub*\nt.me/+F_BNXoMjPPhmNGEx  
+- *Seductive Sirens*\nt.me/+nvm1zwZz7FA1MTdh  
+- *The Sluts Store*\nt.me/+pkxiRKn2ZvcyMjI8  
+- *My Hot Friends*\nt.me/+A47SCYOy2_MzOTcx  
+- *CumSlut Paradise*\nt.me/+y5TaJPgVGvI1NzQ0  
 """
 if not os.path.exists(POP_DIR):
     os.makedirs(POP_DIR)
