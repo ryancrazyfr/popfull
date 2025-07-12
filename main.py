@@ -482,7 +482,7 @@ async def vip_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         username = update.message.from_user.username or "unknown"
 
         # Add to Google Sheet (VIP_Users sheet)
-        vip_sheet = sheet.worksheet("VIP_Users")
+        vip_sheet = spreadsheet.worksheet("VIP_Users")
         vip_sheet.append_row([
             str(user_id),
             username,
@@ -502,7 +502,7 @@ async def vip_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def check_vip_expiry(app):
     bot = app.bot
     now = datetime.now()
-    vip_sheet = sheet.worksheet("VIP_Users")
+    vip_sheet = spreadsheet.worksheet("VIP_Users")
     rows = vip_sheet.get_all_records()
 
     for i, row in enumerate(rows, start=2):  # Skip header row
