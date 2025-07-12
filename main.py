@@ -55,7 +55,8 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 creds_dict = json.loads(GOOGLE_JSON)
 sheets_creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(sheets_creds)
-sheet = client.open(SHEET_NAME).sheet1
+spreadsheet = client.open(SHEET_NAME)
+sheet = spreadsheet.sheet1  # For POP Submissions
 drive_creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build("drive", "v3", credentials=drive_creds)
 
