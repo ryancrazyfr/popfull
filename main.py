@@ -39,7 +39,7 @@ GROUP_IDS = [
 REMINDER_GROUP_ID = -1001664882105
 
 
-pop_links = """🔗 *Use these links*
+pop_links = """🔗 *Promote these links*
 
 Sexy Baddies\nt.me/+tGBn9q_6Z-9jMTAx\n  
 Content Hub\nt.me/+F_BNXoMjPPhmNGEx\n  
