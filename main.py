@@ -159,8 +159,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 - My Hot Friends: https://t.me/+A47SCYO9z_MzOTcx  
 - CumSlut Paradise: https://t.me/+y5TaJPgVGvI1NzQ0  
 """
-    
-    await update.message.reply_markdown(pop_links,disable_web_page_preview=True)
+    await update.message.reply_text(pop_links, parse_mode="HTML", disable_web_page_preview=True)
           
 
 async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -384,7 +383,7 @@ async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
                 await context.bot.send_message(
                     chat_id=int(user_id),
                     text=pop_links,  # Assuming this is a string of links
-                    parse_mode='Markdown',
+                    parse_mode='HTML',
                     disable_web_page_preview=True
                 )
             except Exception as e:
