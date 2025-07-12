@@ -491,8 +491,8 @@ async def vip_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "FALSE"
         ])
 
-        # Add to group
-        await context.bot.invite_chat_member(1001898315101, user_id)
+        
+        
         
 
     except Exception as e:
