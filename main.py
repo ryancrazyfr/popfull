@@ -149,7 +149,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_markdown(welcome_msg)
           
-    
+    pop_links = """🔗 <b>Use these links for POP :</b><br><br>
+<b>Sexy Baddies</b><br><a href="https://t.me/+tGBn9q_6Z-9jMTAx">t.me/+tGBn9q_6Z-9jMTAx</a><br><br>
+<b>Content Hub</b><br><a href="https://t.me/+F_BNXoMjPPhmNGEx">t.me/+F_BNXoMjPPhmNGEx</a><br><br>
+<b>Seductive Sirens</b><br><a href="https://t.me/+nvm1zwZz7FA1MTdh">t.me/+nvm1zwZz7FA1MTdh</a><br><br>
+<b>The Sluts Store</b><br><a href="https://t.me/+pkxiRKn2ZvcyMjI8">t.me/+pkxiRKn2ZvcyMjI8</a><br><br>
+<b>My Hot Friends</b><br><a href="https://t.me/+A47SCYOy2_MzOTcx">t.me/+A47SCYOy2_MzOTcx</a><br><br>
+<b>CumSlut Paradise</b><br><a href="https://t.me/+y5TaJPgVGvI1NzQ0">t.me/+y5TaJPgVGvI1NzQ0</a>
+"""
     await update.message.reply_text(pop_links, parse_mode="HTML", disable_web_page_preview=True)
           
 
