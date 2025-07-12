@@ -349,7 +349,7 @@ scheduler = AsyncIOScheduler()
 async def on_startup(app):
     scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
     scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed,thu,fri", hour=8, minute=0),args=[app],timezone="UTC")
-    scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[application])
+    scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[app])
     scheduler.start()
     print("Scheduler started")
 
@@ -498,8 +498,8 @@ async def vip_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Error: {e}")@bot.message_handler(commands=['vipadd'])
 
 
-async def check_vip_expiry(application):
-    bot = application.bot
+async def check_vip_expiry(app):
+    bot = app.bot
     now = datetime.now()
     vip_sheet = sheet.worksheet("VIP_Users")
     rows = vip_sheet.get_all_records()
