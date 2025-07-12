@@ -349,6 +349,7 @@ scheduler = AsyncIOScheduler()
 async def on_startup(app):
     scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
     scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed,thu,fri", hour=8, minute=0),args=[app],timezone="UTC")
+    scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[application])
     scheduler.start()
     print("Scheduler started")
 
@@ -454,6 +455,80 @@ async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"🧠 {answer}")
     except Exception as e:
         await update.message.reply_text(f"⚠️ Error: {e}")
+
+
+async def vip_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        args = context.args
+        user_id = int(args[0])
+        duration_str = args[1].lower()
+
+        # Parse duration
+        if duration_str.endswith("h"):
+            delta = timedelta(hours=int(duration_str[:-1]))
+        elif duration_str.endswith("d"):
+            delta = timedelta(days=int(duration_str[:-1]))
+        elif duration_str.endswith("w"):
+            delta = timedelta(weeks=int(duration_str[:-1]))
+        elif duration_str.endswith("m"):
+            delta = timedelta(days=30 * int(duration_str[:-1]))
+        else:
+            await update.message.reply_text("❌ Invalid duration format. Use 24h, 3d, 1w, 1m.")
+            return
+
+        start_time = datetime.now()
+        end_time = start_time + delta
+        username = update.message.from_user.username or "unknown"
+
+        # Add to Google Sheet (VIP_Users sheet)
+        vip_sheet = sheet.worksheet("VIP_Users")
+        vip_sheet.append_row([
+            str(user_id),
+            username,
+            start_time.strftime("%Y-%m-%d %H:%M:%S"),
+            end_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "FALSE"
+        ])
+
+        # Add to group
+        await context.bot.invite_chat_member(1001898315101, user_id)
+        
+
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error: {e}")@bot.message_handler(commands=['vipadd'])
+
+
+async def check_vip_expiry(application):
+    bot = application.bot
+    now = datetime.now()
+    vip_sheet = sheet.worksheet("VIP_Users")
+    rows = vip_sheet.get_all_records()
+
+    for i, row in enumerate(rows, start=2):  # Skip header row
+        user_id = int(row["user_id"])
+        end_time = datetime.strptime(row["end_time"], "%Y-%m-%d %H:%M:%S")
+        reminder_sent = row["reminder_sent"].strip().upper() == "TRUE"
+
+        time_diff = (end_time - now).total_seconds()
+
+        if 0 < time_diff < 3600 and not reminder_sent:
+            # Send reminder
+            try:
+                await bot.send_message(chat_id=user_id, text="⚠️ Your VIP access is about to expire in 1 hour! Renew to stay in the group.")
+                vip_sheet.update_cell(i, 5, "TRUE")  # Update 'reminder_sent' to TRUE
+            except:
+                pass
+
+        elif now > end_time:
+            # Remove from VIP group
+            try:
+                await bot.ban_chat_member(1001898315101, user_id)
+                await bot.unban_chat_member(1001898315101, user_id)
+                await bot.send_message(chat_id=user_id, text="🚫 Your VIP subscription has expired. Please renew to rejoin.")
+            except:
+                pass
+
+
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
     app.add_handler(CommandHandler("start", start))
@@ -466,6 +541,7 @@ def main():
     app.add_handler(CommandHandler("muteuser", mute_user))
     app.add_handler(CommandHandler("ask", ask))
     app.add_handler(CommandHandler("testreminder", test_pop_reminder))
+    app.add_handler(CommandHandler("vip_add", vip_add))
     app.add_handler(MessageHandler(filters.VIDEO, handle_video))
 
     
