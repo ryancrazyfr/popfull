@@ -356,6 +356,7 @@ async def on_startup(app):
     scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed,thu,fri", hour=8, minute=0),args=[app],timezone="UTC")
     scheduler.add_job(send_refresh_reminders, CronTrigger(day=25, hour=8), args=[app])
     scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[app])
+    scheduler.add_job(mute_non_refresh_submitters, CronTrigger(day=1, hour=0, minute=0), args =[app])  # Midnight on 1st
     scheduler.start()
     print("Scheduler started")
 
@@ -604,6 +605,7 @@ async def approve_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("⚠️ No pending submission found.")
             return
 
+        # Log to sheet
         refresh_sheet.append_row([
             str(data["User_id"]),
             f"@{data['username']}",
@@ -611,10 +613,30 @@ async def approve_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
             data["timestamp"]
         ])
 
+        # ✅ Unmute the user in all refresh groups
+        for group_id in REFRESH_IDS:
+            try:
+                await context.bot.restrict_chat_member(
+                    chat_id=group_id,
+                    user_id=user_id,
+                    permissions=ChatPermissions(
+                        can_send_messages=True,
+                        can_send_media_messages=True,
+                        can_send_other_messages=True,
+                        can_add_web_page_previews=True
+                    )
+                )
+                print(f"✅ Unmuted {user_id} in group {group_id}")
+            except Exception as e:
+                print(f"⚠️ Failed to unmute {user_id} in {group_id}: {e}")
+
+        # Notify
         await context.bot.send_message(chat_id=user_id, text="✅ Your Refresh submission has been approved.")
         await update.message.reply_text(f"✅ Approved and logged for @{data['username']}")
         del context.bot_data[f"refresh_pending_{user_id}"]
-    except:
+
+    except Exception as e:
+        print(f"❌ Error in approve_refresh: {e}")
         await update.message.reply_text("❌ Error approving submission.")
 
 # -------- Reject --------
@@ -651,9 +673,49 @@ async def send_refresh_reminders(app):
             pass
 
 
+def get_refresh_user_ids(refresh_sheet):
+    this_month = datetime.now().strftime('%B %Y')
+    records = refresh_sheet.get_all_records()
+    user_ids = set()
 
+    for row in records:
+        try:
+            if row["month"] == this_month:
+                user_ids.add(str(row["User_ID"]))
+        except Exception as e:
+            print(f"Skipping row due to error: {e}")
 
+    return user_ids
 
+def get_all_tracked_user_ids(refresh_sheet):
+    records = refresh_sheet.get_all_records()
+    return {str(row["User_ID"]) for row in records if "User_ID" in row}
+
+async def mute_non_refresh_submitters(app):
+    try:
+        tracked_users = get_all_tracked_user_ids(refresh_sheet)  # all expected
+        submitted_users = get_refresh_user_ids(refresh_sheet)     # only submitted this month
+
+        non_submitters = tracked_users - submitted_users
+
+        for user_id in non_submitters:
+            for group_id in REFRESH_IDS:
+                try:
+                    await bot.restrict_chat_member(
+                        chat_id=group_id,
+                        user_id=int(user_id),
+                        permissions=ChatPermissions(can_send_messages=False)
+                    )
+                    print(f"Muted {user_id} in group {group_id}")
+                except Exception as e:
+                    print(f"Failed to mute {user_id} in {group_id}: {e}")
+
+    except Exception as e:
+        print(f"❌ Error during mute process: {e}")
+        
+async def run_fresh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await mute_non_refresh_submitters(context.application)
+    await update.message.reply_text("✅ run_fresh executed.")        
 
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
@@ -674,7 +736,7 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))
     app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_refresh_added))
-
+    app.add_handler(CommandHandler("runfresh", run_fresh_command))
     
     app.run_polling()
 
