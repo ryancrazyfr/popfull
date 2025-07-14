@@ -57,7 +57,7 @@ sheets_creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scop
 client = gspread.authorize(sheets_creds)
 spreadsheet = client.open(SHEET_NAME)
 sheet = spreadsheet.sheet1  # For POP Submissions
-refresh_sheet = spreadsheet.refresh
+refresh_sheet = spreadsheet.worksheet("Refresh")
 drive_creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build("drive", "v3", credentials=drive_creds)
 
