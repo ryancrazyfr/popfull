@@ -57,7 +57,7 @@ sheets_creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scop
 client = gspread.authorize(sheets_creds)
 spreadsheet = client.open(SHEET_NAME)
 sheet = spreadsheet.sheet1  # For POP Submissions
-#refresh_sheet = spreadsheet.worksheet("Refresh")
+refresh_sheet = spreadsheet.worksheet("Refresh_Groups")
 drive_creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build("drive", "v3", credentials=drive_creds)
 
@@ -354,7 +354,7 @@ scheduler = AsyncIOScheduler()
 async def on_startup(app):
     scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
     scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed,thu,fri", hour=8, minute=0),args=[app],timezone="UTC")
-   #scheduler.add_job(send_refresh_reminders, CronTrigger(day=25, hour=8), args=[app])
+    scheduler.add_job(send_refresh_reminders, CronTrigger(day=25, hour=8), args=[app])
     scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[app])
     scheduler.start()
     print("Scheduler started")
@@ -596,7 +596,7 @@ async def handle_refresh_added(update: Update, context: ContextTypes.DEFAULT_TYP
     await update.message.reply_text("📤 Submission sent for admin approval.")
 
 # -------- Approve --------
-"""async def approve_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def approve_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         user_id = int(update.message.text.split("_")[1])
         data = context.bot_data.get(f"refresh_pending_{user_id}")
@@ -630,10 +630,10 @@ async def reject_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Rejected submission from @{data['username']}")
         del context.bot_data[f"refresh_pending_{user_id}"]
     except:
-        await update.message.reply_text("❌ Error rejecting submission.")"""
+        await update.message.reply_text("❌ Error rejecting submission.")
 
 # -------- Reminder on 25th --------
-"""async def send_refresh_reminders(app):
+async def send_refresh_reminders(app):
     user_ids = set()
     records = refresh_sheet.get_all_records()
     current_month = datetime.now().strftime('%B %Y')
@@ -648,7 +648,7 @@ async def reject_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 text="🔔 Don't forget to do your monthly refresh before the 1st!"
             )
         except:
-            pass"""
+            pass
 
 
 
@@ -671,8 +671,8 @@ def main():
     app.add_handler(MessageHandler(filters.VIDEO, handle_video))
 
     app.add_handler(CommandHandler("refresh", refresh_command))
-   # app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))
-   # app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))
+    app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))
+    app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))
 
 
     
