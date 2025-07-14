@@ -57,7 +57,7 @@ sheets_creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scop
 client = gspread.authorize(sheets_creds)
 spreadsheet = client.open(SHEET_NAME)
 sheet = spreadsheet.sheet1  # For POP Submissions
-refresh_sheet = spreadsheet.worksheet("Refresh")
+#refresh_sheet = spreadsheet.worksheet("Refresh")
 drive_creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build("drive", "v3", credentials=drive_creds)
 
@@ -633,7 +633,7 @@ async def reject_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ Error rejecting submission.")"""
 
 # -------- Reminder on 25th --------
-async def send_refresh_reminders(app):
+"""async def send_refresh_reminders(app):
     user_ids = set()
     records = refresh_sheet.get_all_records()
     current_month = datetime.now().strftime('%B %Y')
@@ -648,7 +648,7 @@ async def send_refresh_reminders(app):
                 text="🔔 Don't forget to do your monthly refresh before the 1st!"
             )
         except:
-            pass
+            pass"""
 
 
 
