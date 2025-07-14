@@ -57,8 +57,12 @@ sheets_creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scop
 client = gspread.authorize(sheets_creds)
 spreadsheet = client.open(SHEET_NAME)
 sheet = spreadsheet.sheet1  # For POP Submissions
+refresh_sheet = spreadsheet.refresh
 drive_creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build("drive", "v3", credentials=drive_creds)
+
+REFRESH_IDS = [-1001512076600, -1001706140667, -1001867826270]  # your 3 refresh groups
+
 
 def get_last_friday():
     today = datetime.today()
@@ -557,8 +561,7 @@ async def check_vip_expiry(app):
                 pass
 
 
-REFRESH_IDS = [-1001512076600, -1001706140667, -1001867826270]  # your 3 refresh groups
-refresh_sheet = spreadsheet.worksheet("Refresh")
+
 
 # -------- /refresh command --------
 async def refresh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
