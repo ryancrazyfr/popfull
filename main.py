@@ -350,6 +350,7 @@ scheduler = AsyncIOScheduler()
 async def on_startup(app):
     scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
     scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed,thu,fri", hour=8, minute=0),args=[app],timezone="UTC")
+    scheduler.add_job(send_refresh_reminders, CronTrigger(day=25, hour=8), args=[app])
     scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[app])
     scheduler.start()
     print("Scheduler started")
@@ -556,6 +557,101 @@ async def check_vip_expiry(app):
                 pass
 
 
+REFRESH_IDS = [-1001512076600, -1001706140667, -1001867826270]  # your 3 refresh groups
+refresh_sheet = spreadsheet.worksheet("Refresh")
+
+# -------- /refresh command --------
+async def refresh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Please type 'added' if you’ve completed the monthly refresh.")
+
+# -------- Handle 'added' from user --------
+async def handle_refresh_added(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.chat.type != "private":
+        return
+
+    if update.message.text.strip().lower() != "added":
+        return
+
+    user = update.effective_user
+    username = user.username or f"user_{user.id}"
+    month = datetime.now().strftime('%B %Y')
+    timestamp = datetime.now().strftime('%Y-%m-%d %I:%M %p')
+
+    context.bot_data[f"refresh_pending_{user.id}"] = {
+        "User_id": user.id,
+        "username": username,
+        "month": month,
+        "timestamp": timestamp,
+    }
+
+    await context.bot.send_message(
+        chat_id=ADMIN_USER_ID,
+        text=f"⚠️ Refresh submission from @{username}\n"
+             f"Approve with /approverefresh_{user.id} or reject with /rejectrefresh_{user.id}"
+    )
+
+    await update.message.reply_text("📤 Submission sent for admin approval.")
+
+# -------- Approve --------
+async def approve_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        user_id = int(update.message.text.split("_")[1])
+        data = context.bot_data.get(f"refresh_pending_{user_id}")
+        if not data:
+            await update.message.reply_text("⚠️ No pending submission found.")
+            return
+
+        refresh_sheet.append_row([
+            str(data["User_id"]),
+            f"@{data['username']}",
+            data["month"],
+            data["timestamp"]
+        ])
+
+        await context.bot.send_message(chat_id=user_id, text="✅ Your Refresh submission has been approved.")
+        await update.message.reply_text(f"✅ Approved and logged for @{data['username']}")
+        del context.bot_data[f"refresh_pending_{user_id}"]
+    except:
+        await update.message.reply_text("❌ Error approving submission.")
+
+# -------- Reject --------
+async def reject_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        user_id = int(update.message.text.split("_")[1])
+        data = context.bot_data.get(f"refresh_pending_{user_id}")
+        if not data:
+            await update.message.reply_text("⚠️ No pending submission found.")
+            return
+
+        await context.bot.send_message(chat_id=user_id, text="❌ Your Refresh submission was rejected by the admin.")
+        await update.message.reply_text(f"❌ Rejected submission from @{data['username']}")
+        del context.bot_data[f"refresh_pending_{user_id}"]
+    except:
+        await update.message.reply_text("❌ Error rejecting submission.")
+
+# -------- Reminder on 25th --------
+async def send_refresh_reminders(app):
+    user_ids = set()
+    records = refresh_sheet.get_all_records()
+    current_month = datetime.now().strftime('%B %Y')
+    for row in records:
+        if row['Month'] == current_month:
+            user_ids.add(int(row['User_id']))
+
+    for user_id in user_ids:
+        try:
+            await context.bot.send_message(
+                chat_id=user_id,
+                text="🔔 Don't forget to do your monthly refresh before the 1st!"
+            )
+        except:
+            pass
+
+
+
+
+
+
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
     app.add_handler(CommandHandler("start", start))
@@ -571,8 +667,9 @@ def main():
     app.add_handler(CommandHandler("vip_add", vip_add))
     app.add_handler(MessageHandler(filters.VIDEO, handle_video))
 
-    
-
+    app.add_handler(CommandHandler("refresh", refresh_command))
+    app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))
+    app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))
 
 
     
