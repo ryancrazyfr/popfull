@@ -671,8 +671,8 @@ def main():
     app.add_handler(MessageHandler(filters.VIDEO, handle_video))
 
     app.add_handler(CommandHandler("refresh", refresh_command))
-    app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))
-    app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))
+   # app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))
+   # app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))
 
 
     
