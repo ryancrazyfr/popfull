@@ -596,7 +596,7 @@ async def handle_refresh_added(update: Update, context: ContextTypes.DEFAULT_TYP
     await update.message.reply_text("📤 Submission sent for admin approval.")
 
 # -------- Approve --------
-async def approve_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
+"""async def approve_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         user_id = int(update.message.text.split("_")[1])
         data = context.bot_data.get(f"refresh_pending_{user_id}")
@@ -630,7 +630,7 @@ async def reject_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Rejected submission from @{data['username']}")
         del context.bot_data[f"refresh_pending_{user_id}"]
     except:
-        await update.message.reply_text("❌ Error rejecting submission.")
+        await update.message.reply_text("❌ Error rejecting submission.")"""
 
 # -------- Reminder on 25th --------
 async def send_refresh_reminders(app):
