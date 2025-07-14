@@ -575,7 +575,7 @@ async def handle_refresh_added(update: Update, context: ContextTypes.DEFAULT_TYP
     if update.message.text.strip().lower() != "added":
         return
 
-    User_id = update.effective_user
+    user = update.effective_user
     username = user.username or f"user_{user.id}"
     month = datetime.now().strftime('%B %Y')
     timestamp = datetime.now().strftime('%Y-%m-%d %I:%M %p')
