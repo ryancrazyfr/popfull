@@ -691,32 +691,34 @@ def get_all_tracked_user_ids(refresh_sheet):
     records = refresh_sheet.get_all_records()
     return {str(row["User_ID"]) for row in records if "User_ID" in row}
 
-async def mute_non_refresh_submitters(app):
+async def mute_non_refresh_submitters(context):
     try:
-        tracked_users = get_all_tracked_user_ids(refresh_sheet)  # all expected
-        submitted_users = get_refresh_user_ids(refresh_sheet)     # only submitted this month
-
+        tracked_users = get_all_tracked_user_ids(refresh_sheet)
+        submitted_users = get_refresh_user_ids(refresh_sheet)
         non_submitters = tracked_users - submitted_users
 
         for user_id in non_submitters:
             for group_id in REFRESH_IDS:
                 try:
-                    await bot.restrict_chat_member(
+                    await context.bot.restrict_chat_member(
                         chat_id=group_id,
                         user_id=int(user_id),
                         permissions=ChatPermissions(can_send_messages=False)
                     )
                     print(f"Muted {user_id} in group {group_id}")
                 except Exception as e:
-                    print(f"Failed to mute {user_id} in {group_id}: {e}")
-
+                    print(f"Failed to mute {user_id} in group {group_id}: {e}")
     except Exception as e:
-        print(f"❌ Error during mute process: {e}")
+        print(f"❌ Error during refresh mute: {e}")
+        
         
 async def run_fresh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await mute_non_refresh_submitters(context.application)
-    await update.message.reply_text("✅ run_fresh executed.")        
+    if update.effective_user.id != ADMIN_USER_ID:
+        return
 
+    await mute_non_refresh_submitters(context)
+    await update.message.reply_text("✅ Refresh mute check executed.")
+    
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
     app.add_handler(CommandHandler("start", start))
