@@ -716,11 +716,19 @@ async def mute_non_refresh_submitters(context):
 
         
 async def run_fresh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("run_fresh_command triggered")
+    print(f"User ID: {update.effective_user.id}")
+    
     if update.effective_user.id != ADMIN_USER_ID:
+        await update.message.reply_text("⛔ Not authorized.")
         return
 
-    await mute_non_refresh_submitters(context)
-    await update.message.reply_text("✅ Refresh mute check executed.")
+    try:
+        await mute_non_refresh_submitters(context)
+        await update.message.reply_text("✅ Refresh mute check executed.")
+    except Exception as e:
+        print(f"Error in runfresh: {e}")
+        await update.message.reply_text("❌ Something went wrong.")
     
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
