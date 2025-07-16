@@ -695,22 +695,24 @@ async def mute_non_refresh_submitters(context):
     try:
         tracked_users = get_all_tracked_user_ids(refresh_sheet)
         submitted_users = get_refresh_user_ids(refresh_sheet)
-        non_submitters = tracked_users - submitted_users
+        
 
-        for user_id in non_submitters:
-            for group_id in REFRESH_IDS:
-                try:
-                    await context.bot.restrict_chat_member(
-                        chat_id=group_id,
-                        user_id=int(user_id),
+        for user_id in tracked_users:
+        if user_id not in submitted_users:
+            try:
+              for group_id in REFRESH_IDS:
+                await context.bot.restrict_chat_member(
+                        group_id,
+                        int(user_id),
                         permissions=ChatPermissions(can_send_messages=False)
                     )
-                    print(f"Muted {user_id} in group {group_id}")
-                except Exception as e:
-                    print(f"Failed to mute {user_id} in group {group_id}: {e}")
-    except Exception as e:
-        print(f"❌ Error during refresh mute: {e}")
-        
+              await context.bot.send_message(
+                    chat_id=user_id,
+                    text="🔇 You’ve been muted in Tight Queens,Wickedly Wild and Star Hoes for not doing the monthly refresh!"
+                    )
+            except Exception as e:
+                    print(f"❌ Error muting {user_id} in {group_id}: {e}")
+
         
 async def run_fresh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_USER_ID:
