@@ -691,6 +691,8 @@ def get_all_tracked_user_ids(refresh_sheet):
     records = refresh_sheet.get_all_records()
     return {str(row["User_ID"]) for row in records if "User_ID" in row}
 
+from telegram import ChatPermissions
+
 async def mute_non_refresh_submitters(context):
     tracked_users = get_all_tracked_user_ids(refresh_sheet)
     submitted_users = get_refresh_user_ids(refresh_sheet)
@@ -699,19 +701,32 @@ async def mute_non_refresh_submitters(context):
         if user_id not in submitted_users:
             try:
                 for group_id in REFRESH_IDS:
-                    await context.bot.restrict_chat_member(
-                        chat_id=group_id,
-                        user_id=int(user_id),
-                        permissions=ChatPermissions(can_send_messages=False)
-                    )
+                    try:
+                        # Check if user is in the group
+                        member = await context.bot.get_chat_member(group_id, int(user_id))
 
-                await context.bot.send_message(
-                    chat_id=int(user_id),
-                    text="🔇 You’ve been muted in Tight Queens, Wickedly Wild, and Star Hoes for not doing the monthly refresh!"
-                )
+                        if member.status not in ['left', 'kicked']:
+                            # Get the group title
+                            group = await context.bot.get_chat(group_id)
+                            group_title = group.title
+
+                            # Mute the user in the group
+                            await context.bot.restrict_chat_member(
+                                chat_id=group_id,
+                                user_id=int(user_id),
+                                permissions=ChatPermissions(can_send_messages=False)
+                            )
+
+                            # Send notification with group name
+                            await context.bot.send_message(
+                                chat_id=int(user_id),
+                                text=f"🔇 You’ve been muted in *{group_title}* for not completing the monthly refresh.",
+                                parse_mode="Markdown"
+                            )
+                    except Exception as e:
+                        print(f"❌ Error processing group {group_id} for user {user_id}: {e}")
             except Exception as e:
-                print(f"❌ Error muting {user_id} in {group_id}: {e}")
-
+                print(f"❌ Error muting {user_id}: {e}")
     
 
         
