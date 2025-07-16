@@ -680,7 +680,7 @@ def get_refresh_user_ids(refresh_sheet):
 
     for row in records:
         try:
-            if row["month"] == this_month:
+            if "month" in row and str(row["month"]).strip().lower() == this_month:
                 user_ids.add(str(row["User_ID"]))
         except Exception as e:
             print(f"Skipping row due to error: {e}")
