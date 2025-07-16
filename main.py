@@ -736,6 +736,7 @@ def main():
     app.add_handler(CommandHandler("submitpop", submitpop))
     app.add_handler(CommandHandler("getid", getid))
     app.add_handler(CommandHandler("runcheck", runcheck))
+    app.add_handler(CommandHandler("runfresh", run_fresh_command))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+$"), approve))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+$"), reject))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
@@ -749,7 +750,7 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))
     app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_refresh_added))
-    app.add_handler(CommandHandler("runfresh", run_fresh_command))
+    
     
     app.run_polling()
 
