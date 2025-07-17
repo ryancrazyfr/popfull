@@ -674,24 +674,25 @@ async def send_refresh_reminders(app):
 
 
 def get_refresh_user_ids(refresh_sheet):
-    this_month = datetime.now().strftime('%B %Y')
+    this_month = datetime.now().strftime('%B %Y')  # e.g., 'July 2025'
+    print(f"Looking for rows with month = {this_month}")
+
     records = refresh_sheet.get_all_records()
     user_ids = set()
 
     for row in records:
         try:
-            if "month" in row and str(row["month"]).strip().lower() == this_month:
+            if str(row.get("month", "")).strip() == this_month:
                 user_ids.add(str(row["User_ID"]))
         except Exception as e:
-            print(f"Skipping row due to error: {e}")
+            print(f"Skipping row due to error: {e}, row: {row}")
 
+    print(f"Found {len(user_ids)} refresh users: {user_ids}")
     return user_ids
 
 def get_all_tracked_user_ids(refresh_sheet):
     records = refresh_sheet.get_all_records()
     return {str(row["User_ID"]) for row in records if "User_ID" in row}
-
-from telegram.error import BadRequest, Forbidden, TelegramError
 
 
 async def mute_non_refresh_submitters(context):
