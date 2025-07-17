@@ -709,7 +709,7 @@ async def mute_non_refresh_submitters(context):
                     member = await context.bot.get_chat_member(chat_id=group_id, user_id=int(user_id))
                     print(f"✅ Member status: {member.status}")
                     
-                    if member.status not in ("left", "kicked"):
+                    if member.status not in ("member", "restricted"):
                         group = await context.bot.get_chat(chat_id=group_id)
                         group_title = group.title
 
