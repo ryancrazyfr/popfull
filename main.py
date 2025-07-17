@@ -691,7 +691,7 @@ def get_all_tracked_user_ids(refresh_sheet):
     records = refresh_sheet.get_all_records()
     return {str(row["User_ID"]) for row in records if "User_ID" in row}
 
-from telegram import ChatPermissions
+from telegram.error import BadRequest, Forbidden
 
 async def mute_non_refresh_submitters(context):
     tracked_users = get_all_tracked_user_ids(refresh_sheet)
@@ -699,36 +699,31 @@ async def mute_non_refresh_submitters(context):
 
     for user_id in tracked_users:
         if user_id not in submitted_users:
-            try:
-                for group_id in REFRESH_IDS:
-                    try:
-                        # Check if user is in the group
-                        member = await context.bot.get_chat_member(group_id, int(user_id))
+            for group_id in REFRESH_IDS:
+                try:
+                    member = await context.bot.get_chat_member(chat_id=group_id, user_id=int(user_id))
+                    if member.status not in ("left", "kicked"):
+                        # User is still in the group
+                        group = await context.bot.get_chat(chat_id=group_id)
+                        group_title = group.title
 
-                        if member.status not in ['left', 'kicked']:
-                            # Get the group title
-                            group = await context.bot.get_chat(group_id)
-                            group_title = group.title
+                        await context.bot.restrict_chat_member(
+                            chat_id=group_id,
+                            user_id=int(user_id),
+                            permissions=ChatPermissions(can_send_messages=False)
+                        )
 
-                            # Mute the user in the group
-                            await context.bot.restrict_chat_member(
-                                chat_id=group_id,
-                                user_id=int(user_id),
-                                permissions=ChatPermissions(can_send_messages=False)
-                            )
-
-                            # Send notification with group name
-                            await context.bot.send_message(
-                                chat_id=int(user_id),
-                                text=f"🔇 You’ve been muted in *{group_title}* for not completing the monthly refresh.",
-                                parse_mode="Markdown"
-                            )
-                    except Exception as e:
-                        import traceback
-                        traceback.print()
-                        print(f"❌ Error processing group {group_id} for user {user_id}: {e}")
-            except Exception as e:
-                print(f"❌ Error muting {user_id}: {e}")
+                        await context.bot.send_message(
+                            chat_id=int(user_id),
+                            text=f"🔇 You’ve been muted in *{group_title}* for not doing the monthly refresh!",
+                            parse_mode='Markdown'
+                        )
+                except Forbidden:
+                    print(f"❌ Bot doesn't have permission to restrict or message user {user_id} in group {group_id}")
+                except BadRequest as e:
+                    print(f"❌ BadRequest for user {user_id} in group {group_id}: {e}")
+                except Exception as e:
+                    print(f"❌ Unexpected error for user {user_id} in group {group_id}: {e}")
     
 
         
