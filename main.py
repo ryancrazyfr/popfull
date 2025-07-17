@@ -694,12 +694,10 @@ def get_all_tracked_user_ids(refresh_sheet):
     records = refresh_sheet.get_all_records()
     return {str(row["User_ID"]) for row in records if "User_ID" in row}
 
-
-
 from telegram.error import Forbidden, BadRequest, TelegramError
+from telegram import ChatPermissions
 
 async def mute_non_refresh_submitters(context):
-    
     tracked_users = get_all_tracked_user_ids(refresh_sheet)
     submitted_users = get_refresh_user_ids(refresh_sheet)
 
@@ -707,23 +705,23 @@ async def mute_non_refresh_submitters(context):
         if user_id not in submitted_users:
             for group_id in REFRESH_IDS:
                 try:
-                    # Check if user is in group
+                    # Check if user is in the group
                     try:
                         member = await context.bot.get_chat_member(group_id, int(user_id))
                         if member.status in ['left', 'kicked']:
-                            print(f"⚠️ User {user_id} is not in group {group_id} (status: {member.status})")
-                            continue
-                    except TelegramError as e:
-                        print(f"⚠️ Failed to get member status for user {user_id} in group {group_id}: {e}")
-                        continue
+                            print(f"⚠️ User {user_id} not in group {group_id} (status: {member.status})")
+                            continue  # Skip to next group
+                    except (Forbidden, BadRequest, TelegramError) as e:
+                        print(f"⚠️ Failed to fetch member status for user {user_id} in group {group_id}: {e}")
+                        continue  # Skip to next group
 
                     # Get group title
                     try:
                         group = await context.bot.get_chat(group_id)
                         group_title = group.title
                     except Exception as e:
-                        group_title = "this group"
                         print(f"⚠️ Failed to get group title for {group_id}: {e}")
+                        group_title = "a group"
 
                     # Mute the user
                     await context.bot.restrict_chat_member(
@@ -731,28 +729,22 @@ async def mute_non_refresh_submitters(context):
                         user_id=int(user_id),
                         permissions=ChatPermissions(can_send_messages=False)
                     )
-
                     print(f"✅ Muted {user_id} in {group_title}")
 
                     # Notify the user
                     try:
                         await context.bot.send_message(
                             chat_id=int(user_id),
-                            text=f"🔇 You’ve been muted in *{group_title}* for not completing your monthly refresh.",
+                            text=f"🔇 You’ve been muted in *{group_title}* for not doing the monthly refresh!",
                             parse_mode="Markdown"
                         )
                     except Exception as e:
-                        print(f"⚠️ Couldn't notify user {user_id}: {e}")
+                        print(f"⚠️ Couldn’t notify user {user_id}: {e}")
 
-                except Forbidden:
-                    print(f"❌ Bot lacks permission to mute user {user_id} in group {group_id}")
-                except BadRequest as e:
-                    print(f"❌ BadRequest for user {user_id} in group {group_id}: {e}")
-                except TelegramError as e:
-                    print(f"❌ Telegram error for user {user_id} in group {group_id}: {e}")
                 except Exception as e:
-                    print(f"❌ Unexpected error for user {user_id} in group {group_id}: {e}")
-        
+                    print(f"❌ Unexpected error while processing user {user_id} in group {group_id}: {e}")
+
+
 async def run_fresh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     #print("run_fresh_command triggered")
     #print(f"User ID: {update.effective_user.id}")
