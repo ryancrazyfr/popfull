@@ -696,40 +696,62 @@ def get_all_tracked_user_ids(refresh_sheet):
 
 
 
+from telegram.error import Forbidden, BadRequest, TelegramError
+
 async def mute_non_refresh_submitters(context):
+    refresh_sheet = context.bot_data["refresh_sheet"]
     tracked_users = get_all_tracked_user_ids(refresh_sheet)
     submitted_users = get_refresh_user_ids(refresh_sheet)
 
     for user_id in tracked_users:
         if user_id not in submitted_users:
-            try:
-                for group_id in REFRESH_IDS:
+            for group_id in REFRESH_IDS:
+                try:
+                    # Check if user is in group
                     try:
-                        # Check if user is in the group
                         member = await context.bot.get_chat_member(group_id, int(user_id))
+                        if member.status in ['left', 'kicked']:
+                            print(f"⚠️ User {user_id} is not in group {group_id} (status: {member.status})")
+                            continue
+                    except TelegramError as e:
+                        print(f"⚠️ Failed to get member status for user {user_id} in group {group_id}: {e}")
+                        continue
 
-                        if member.status not in ['left', 'kicked']:
-                            # Get the group title
-                            group = await context.bot.get_chat(group_id)
-                            group_title = group.title
-
-                            # Mute the user in the group
-                            await context.bot.restrict_chat_member(
-                                chat_id=group_id,
-                                user_id=int(user_id),
-                                permissions=ChatPermissions(can_send_messages=False)
-                            )
-
-                            # Send notification with group name
-                            await context.bot.send_message(
-                                chat_id=int(user_id),
-                                text=f"🔇 You’ve been muted in *{group_title}* for not completing the monthly refresh.",
-                                parse_mode="Markdown"
-                            )
+                    # Get group title
+                    try:
+                        group = await context.bot.get_chat(group_id)
+                        group_title = group.title
                     except Exception as e:
-                        print(f"❌ Error processing group {group_id} for user {user_id}: {e}")
-            except Exception as e:
-                print(f"❌ Error muting {user_id}: {e}")
+                        group_title = "this group"
+                        print(f"⚠️ Failed to get group title for {group_id}: {e}")
+
+                    # Mute the user
+                    await context.bot.restrict_chat_member(
+                        chat_id=group_id,
+                        user_id=int(user_id),
+                        permissions=ChatPermissions(can_send_messages=False)
+                    )
+
+                    print(f"✅ Muted {user_id} in {group_title}")
+
+                    # Notify the user
+                    try:
+                        await context.bot.send_message(
+                            chat_id=int(user_id),
+                            text=f"🔇 You’ve been muted in *{group_title}* for not completing your monthly refresh.",
+                            parse_mode="Markdown"
+                        )
+                    except Exception as e:
+                        print(f"⚠️ Couldn't notify user {user_id}: {e}")
+
+                except Forbidden:
+                    print(f"❌ Bot lacks permission to mute user {user_id} in group {group_id}")
+                except BadRequest as e:
+                    print(f"❌ BadRequest for user {user_id} in group {group_id}: {e}")
+                except TelegramError as e:
+                    print(f"❌ Telegram error for user {user_id} in group {group_id}: {e}")
+                except Exception as e:
+                    print(f"❌ Unexpected error for user {user_id} in group {group_id}: {e}")
         
 async def run_fresh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     #print("run_fresh_command triggered")
