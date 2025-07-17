@@ -714,8 +714,8 @@ async def mute_non_refresh_submitters(context):
                         #group_title = group.title
 
                         await context.bot.restrict_chat_member(
-                            chat_id=group_id,
-                            user_id=int(user_id),
+                            group_id,
+                            int(user_id),
                             permissions=ChatPermissions(can_send_messages=False)
                         )
 
