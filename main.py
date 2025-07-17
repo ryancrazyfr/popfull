@@ -699,7 +699,7 @@ def get_all_tracked_user_ids(refresh_sheet):
 from telegram.error import Forbidden, BadRequest, TelegramError
 
 async def mute_non_refresh_submitters(context):
-    refresh_sheet = context.bot_data["refresh_sheet"]
+    
     tracked_users = get_all_tracked_user_ids(refresh_sheet)
     submitted_users = get_refresh_user_ids(refresh_sheet)
 
