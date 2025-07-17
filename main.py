@@ -721,7 +721,7 @@ async def mute_non_refresh_submitters(context):
 
                         await context.bot.send_message(
                             chat_id=int(user_id),
-                            text=f"🔇 You’ve been muted in *{group_title}* for not doing the monthly refresh!",
+                            text=f"🔇 You’ve been muted in groups for not doing the monthly refresh!",
                             parse_mode='Markdown'
                         )
                         print(f"✅ Muted {user_id} in {group_title}")
