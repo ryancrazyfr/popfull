@@ -693,46 +693,27 @@ def get_all_tracked_user_ids(refresh_sheet):
 
 from telegram.error import BadRequest, Forbidden, TelegramError
 
+
 async def mute_non_refresh_submitters(context):
     tracked_users = get_all_tracked_user_ids(refresh_sheet)
     submitted_users = get_refresh_user_ids(refresh_sheet)
 
-    print("🔍 Starting mute check...")
-    print(f"Tracked users: {len(tracked_users)} | Submitted: {len(submitted_users)}")
-
     for user_id in tracked_users:
-        print(f"🔄 Checking user {user_id}")
         if user_id not in submitted_users:
-            for group_id in REFRESH_IDS:
-                try:
-                    #print(f"👉 Checking group {group_id} for user {user_id}")
-                    #member = await context.bot.get_chat_member(chat_id=group_id, user_id=int(user_id))
-                    #print(f"✅ Member status: {member.status}")
-                    
-                    #if member.status not in ("member", "restricted"):
-                       # group = await context.bot.get_chat(chat_id=group_id)
-                        #group_title = group.title
-
-                        await context.bot.restrict_chat_member(
-                            group_id,
-                            int(user_id),
-                            permissions=ChatPermissions(can_send_messages=False)
-                        )
-
-                        await context.bot.send_message(
-                            chat_id=int(user_id),
-                            text=f"🔇 You’ve been muted in groups for not doing the monthly refresh!",
-                            parse_mode='Markdown'
-                        )
-                        print(f"✅ Muted {user_id} in {group_title}")
-                except Forbidden:
-                    print(f"❌ Bot lacks permission for user {user_id} in group {group_id}")
-                except BadRequest as e:
-                    print(f"❌ BadRequest for user {user_id} in group {group_id}: {e}")
-                except TelegramError as e:
-                    print(f"❌ Telegram error: {e}")
-                except Exception as e:
-                    print(f"❌ Unexpected error for user {user_id} in group {group_id}: {e}")
+            try:
+                for group_id in REFRESH_IDS:
+                    await context.bot.restrict_chat_member(
+                        group_id,
+                        int(user_id),
+                        permissions=ChatPermissions(can_send_messages=False)
+                    )
+                await context.bot.send_message(
+                    chat_id=int(user_id),
+                    text="🔇 You’ve been muted in Tight Queens, Wickedly Wild and Star Hoes for not doing the monthly refresh!"
+                )
+                print(f"✅ Muted {user_id}")
+            except Exception as e:
+                print(f"❌ Error muting {user_id} in {group_id}: {e}")
         
 async def run_fresh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print("run_fresh_command triggered")
