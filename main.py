@@ -724,6 +724,8 @@ async def mute_non_refresh_submitters(context):
                                 parse_mode="Markdown"
                             )
                     except Exception as e:
+                        import traceback
+                        traceback.print()
                         print(f"❌ Error processing group {group_id} for user {user_id}: {e}")
             except Exception as e:
                 print(f"❌ Error muting {user_id}: {e}")
