@@ -705,9 +705,9 @@ async def mute_non_refresh_submitters(context):
         if user_id not in submitted_users:
             for group_id in REFRESH_IDS:
                 try:
-                    print(f"👉 Checking group {group_id} for user {user_id}")
-                    member = await context.bot.get_chat_member(chat_id=group_id, user_id=int(user_id))
-                    print(f"✅ Member status: {member.status}")
+                    #print(f"👉 Checking group {group_id} for user {user_id}")
+                    #member = await context.bot.get_chat_member(chat_id=group_id, user_id=int(user_id))
+                    #print(f"✅ Member status: {member.status}")
                     
                     #if member.status not in ("member", "restricted"):
                        # group = await context.bot.get_chat(chat_id=group_id)
