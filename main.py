@@ -673,21 +673,39 @@ async def send_refresh_reminders(app):
             pass
 
 
+
 def get_refresh_user_ids(refresh_sheet):
-    this_month = datetime.now().strftime('%B %Y')  # e.g., 'July 2025'
-    print(f"Looking for rows with month = {this_month}")
+    now = datetime.now()
+
+    # Start: 25th of this month
+    start = datetime(now.year, now.month, 25)
+
+    # End: 1st of next month
+    if now.month == 12:
+        end = datetime(now.year + 1, 1, 1)
+    else:
+        end = datetime(now.year, now.month + 1, 1)
+
+    print(f"🕒 Checking refresh submissions from {start} to {end}")
 
     records = refresh_sheet.get_all_records()
     user_ids = set()
 
     for row in records:
         try:
-            if str(row.get("month", "")).strip() == this_month:
+            ts_str = row.get("timestamp", "").strip()
+            if not ts_str:
+                continue
+
+            # Parse timestamp with AM/PM format
+            timestamp = datetime.strptime(ts_str, "%Y-%m-%d %I:%M %p")
+
+            if start <= timestamp < end:
                 user_ids.add(str(row["User_ID"]))
         except Exception as e:
-            print(f"Skipping row due to error: {e}, row: {row}")
+            print(f"⚠️ Skipping row due to error: {e}, row: {row}")
 
-    print(f"Found {len(user_ids)} refresh users: {user_ids}")
+    print(f"✅ Found {len(user_ids)} refresh users: {user_ids}")
     return user_ids
 
 def get_all_tracked_user_ids(refresh_sheet):
