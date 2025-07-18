@@ -315,7 +315,7 @@ async def getid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"🆔 This group is *{title}*\nChat ID: `{chat_id}`", parse_mode="Markdown")
 
 
-def get_all_tracked_user_ids(sheet):
+def get_tracked_user_ids(sheet):
     records = sheet.get_all_records()
     return {str(row["User ID"]) for row in records if "User ID" in row}
 
@@ -324,7 +324,7 @@ async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     submitted_ids = get_all_submitted_user_ids(sheet)
-    tracked_users = get_all_tracked_user_ids(sheet)
+    tracked_users = get_tracked_user_ids(sheet)
 
     
     for user_id in tracked_users:
@@ -363,7 +363,7 @@ async def on_startup(app):
 async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
    
     submitted_ids =  get_all_submitted_user_ids(sheet)
-    tracked_users = get_all_tracked_user_ids(sheet)
+    tracked_users = get_tracked_user_ids(sheet)
 
     for user_id in tracked_users:
         if user_id not in submitted_ids:
