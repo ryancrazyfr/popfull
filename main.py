@@ -783,7 +783,7 @@ async def run_fresh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
   
 async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
    
-    submitted_ids = get_all_submitted_user_ids(sheet)
+    tracked_users = get_tracked_user_ids(sheet)
     
     
     if update.effective_user.id != ADMIN_USER_ID:
@@ -797,7 +797,7 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_to_send = " ".join(context.args)
     success, failed = 0, 0
 
-    for user_id in submitted_ids
+    for user_id in tracked_users:
         try:
             await context.bot.send_message(
                 chat_id=int(user_id),
