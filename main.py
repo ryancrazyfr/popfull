@@ -17,6 +17,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime, timedelta
 import openai
+from telegram.constants import ParseMode
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
@@ -777,10 +778,44 @@ async def run_fresh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         print(f"Error in runfresh: {e}")
         await update.message.reply_text("❌ Something went wrong.")
+        
+
+  
+async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
+   
+    submitted_ids = get_all_submitted_user_ids(sheet)
     
+    
+    if update.effective_user.id != ADMIN_USER_ID:
+        await update.message.reply_text("❌ You are not authorized to use this command.")
+        return
+
+    if not context.args:
+        await update.message.reply_text("Please provide a message to send.\nUsage: /broadcast Your message here")
+        return
+
+    message_to_send = " ".join(context.args)
+    success, failed = 0, 0
+
+    for user_id in submitted_ids
+        try:
+            await context.bot.send_message(
+                chat_id=int(user_id),
+                text=message_to_send,
+                parse_mode=ParseMode.HTML
+            )
+            success += 1
+        except Exception as e:
+            failed += 1
+            print(f"❌ Failed to send to {user_id}: {e}")
+
+    await update.message.reply_text(f"✅ Sent to {success} users.\n❌ Failed for {failed} users.")
+
+
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("broadcast", broadcast))
     app.add_handler(CommandHandler("submitpop", submitpop))
     app.add_handler(CommandHandler("getid", getid))
     app.add_handler(CommandHandler("runcheck", runcheck))
