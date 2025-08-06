@@ -153,6 +153,7 @@ async def handle_pop_selection(update: Update, context: ContextTypes.DEFAULT_TYP
     context.user_data['pop_day'] = 'friday' if query.data == 'pop_friday' else 'tuesday'
     await query.edit_message_text("Great! Now please send your POP screenshot.")
 
+
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Ignore photos from groups
     if update.effective_chat.type != "private":
@@ -166,8 +167,6 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Reset state
     context.chat_data["expecting_photo"] = False
 
-
-
     user = update.message.from_user
     username = user.username or f"user_{user.id}"
     photo = update.message.photo[-1]
@@ -177,6 +176,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     filepath = os.path.join(POP_DIR, filename)
     await file.download_to_drive(filepath)
 
+    # Save file info for admin approval
     context.bot_data[f"pending_{user.id}"] = {
         "username": username,
         "user_id": user.id,
@@ -185,6 +185,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "timestamp": timestamp
     }
 
+    # Send photo to admin
     await context.bot.send_photo(
         chat_id=ADMIN_USER_ID,
         photo=open(filepath, "rb"),
@@ -192,6 +193,17 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="Markdown"
     )
 
+    # ✅ Determine which sheet to log to
+    pop_day = context.user_data.get("pop_day", "friday")  # default to 'friday'
+    sheet_tab = "Sheet1" if pop_day == "friday" else "Tuesday_Pop"
+    sheet_to_log = spreadsheet.worksheet(sheet_tab)
+
+    now = datetime.now()
+    date_str = now.strftime("%Y-%m-%d")
+    time_str = now.strftime("%H:%M:%S")
+    sheet_to_log.append_row([username, str(user.id), date_str, time_str])
+
+    # Confirm to user
     await update.message.reply_text("📤 POP submitted! Waiting for admin approval.")
 
 async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
