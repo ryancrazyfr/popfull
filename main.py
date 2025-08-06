@@ -58,7 +58,7 @@ The Sluts Store\nt.me/+pkxiRKn2ZvcyMjI8\n
 My Hot Friends\nt.me/+A47SCYOy2_MzOTcx\n  
 CumSlut Paradise\nt.me/+y5TaJPgVGvI1NzQ0\n  
 """
-tuesday_links = """" *Tuesday POP** 
+tuesday_links = """ 🆕️ *Tuesday POP* 
 
 Fashion dolls\nt.me/+d_NP9s67LjViYTAx\n
 College chicks\nt.me/+x3Lq01jlY_k3OWNh\n
@@ -141,9 +141,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "on your own channel or another platform. It helps keep our traffic strong!\n\n"
         "🛠 To submit your weekly POP:\n\n"
         "1. Tap /submitpop\n"
-        "2. Send your POP to this bot\n"
-        "3. wait for admin approval\n"
-        "4. if your pop is rejected, please send again\n\n"
+        "2. Select which pop you're submitting\n"
+        "3. Send your POP to this bot\n"
+        "4. wait for admin approval\n"
+        "5. if your pop is rejected, please send again\n\n"
         "POP is due on every Friday\n\n"
         "📎 Below are the group links you need to promote 👇"
         
