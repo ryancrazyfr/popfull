@@ -792,7 +792,7 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_refresh_added))
     
     
-    app.run_polling()
+    app.run_polling(on_startup=on_startup)
 
 if __name__ == "__main__":
     main()
