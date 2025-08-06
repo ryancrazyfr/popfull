@@ -811,19 +811,22 @@ async def run_fresh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
   
 async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
-   
     tracked_users = get_tracked_user_ids(sheet)
-    
-    
+
     if update.effective_user.id != ADMIN_USER_ID:
         await update.message.reply_text("❌ You are not authorized to use this command.")
         return
 
-    if not context.args:
+    # Get full text after the command (everything after "/broadcast")
+    message_text = update.message.text.partition(' ')[2].strip()
+
+    if not message_text:
         await update.message.reply_text("Please provide a message to send.\nUsage: /broadcast Your message here")
         return
 
-    message_to_send = " ".join(context.args)
+    # Replace \n with <br> to maintain line spacing with HTML
+    message_to_send = message_text.replace("\n", "<br>")
+
     success, failed = 0, 0
 
     for user_id in tracked_users:
@@ -839,6 +842,7 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
             print(f"❌ Failed to send to {user_id}: {e}")
 
     await update.message.reply_text(f"✅ Sent to {success} users.\n❌ Failed for {failed} users.")
+
 
 scheduler = AsyncIOScheduler()
 
