@@ -825,7 +825,7 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # Replace \n with <br> to maintain line spacing with HTML
-    message_to_send = message_text.replace("\n", "<br>")
+    message_to_send = message_text
 
     success, failed = 0, 0
 
