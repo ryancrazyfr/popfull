@@ -145,6 +145,14 @@ async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text("Which POP are you submitting?", reply_markup=reply_markup)
 
+
+async def handle_pop_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    context.user_data['pop_day'] = 'friday' if query.data == 'pop_friday' else 'tuesday'
+    await query.edit_message_text("Great! Now please send your POP screenshot.")
+
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Ignore photos from groups
     if update.effective_chat.type != "private":
@@ -788,6 +796,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("broadcast", broadcast))
     app.add_handler(CommandHandler("submitpop", submitpop))
+    app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern='^pop_'))
     app.add_handler(CommandHandler("getid", getid))
     app.add_handler(CommandHandler("runcheck", runcheck))
     app.add_handler(CommandHandler("runfresh", run_fresh_command))
@@ -798,6 +807,7 @@ def main():
     app.add_handler(CommandHandler("testreminder", test_pop_reminder))
     app.add_handler(CommandHandler("vip_add", vip_add))
     app.add_handler(MessageHandler(filters.VIDEO, handle_video))
+
 
     app.add_handler(CommandHandler("refresh", refresh_command))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))
