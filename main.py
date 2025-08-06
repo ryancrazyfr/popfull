@@ -38,6 +38,14 @@ GROUP_IDS = [
     -1001709491100,  # Seductive Sirens
 ]
 
+TUESDAY_GROUP_IDS = [
+    -1002014635705,
+    -1002040745178,
+    -1002034514107,
+    -1002131278970,
+    -1002076400364
+]
+
 REMINDER_GROUP_ID = -1001664882105
 
 
@@ -60,6 +68,7 @@ client = gspread.authorize(sheets_creds)
 spreadsheet = client.open(SHEET_NAME)
 sheet = spreadsheet.sheet1  # For POP Submissions
 refresh_sheet = spreadsheet.worksheet("Refresh_Groups")
+tuesday_sheet = spreadsheet.worksheet("Tuesday_Pop")
 drive_creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build("drive", "v3", credentials=drive_creds)
 
@@ -261,16 +270,39 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(f"❌ No pending submission found for user {user_id}.")
             return
 
+        # Upload POP screenshot to Drive
         drive_link = upload_to_drive(data["username"], data["filename"], data["filepath"])
-        sheet.append_row([
-            data["username"],
-            str(data["user_id"]),
-            datetime.now().strftime('%Y-%m-%d'),
-            datetime.now().strftime('%H:%M:%S'),
-            drive_link
-        ])
 
-        for group_id in GROUP_IDS:
+        # Prepare timestamps
+        now = datetime.now()
+        date_str = now.strftime('%Y-%m-%d')
+        time_str = now.strftime('%H:%M:%S')
+
+        # Detect whether submission was for Friday or Tuesday
+        pop_day = data.get("pop_day", "friday")  # fallback to 'friday' if missing
+
+        # Log to the correct sheet
+        if pop_day == "tuesday":
+            tuesday_sheet.append_row([
+                data["username"],
+                str(data["user_id"]),
+                date_str,
+                time_str,
+                drive_link
+            ])
+            unmute_groups = TUESDAY_GROUP_IDS  # unmute only in Tuesday groups
+        else:
+            sheet.append_row([
+                data["username"],
+                str(data["user_id"]),
+                date_str,
+                time_str,
+                drive_link
+            ])
+            unmute_groups = GROUP_IDS  # unmute only in Friday groups
+
+        # Unmute the user in relevant groups
+        for group_id in unmute_groups:
             try:
                 await context.bot.restrict_chat_member(
                     group_id,
@@ -285,10 +317,14 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception as e:
                 print(f"Error unmuting user in group {group_id}: {e}")
 
+        # Notify user and admin
         await context.bot.send_message(chat_id=data["user_id"], text="✅ Your POP has been approved and logged.")
-        await context.bot.send_message(chat_id=data["user_id"], text="✅ You have been unmuted in all promo groups. Thanks for submitting your POP!")
+        await context.bot.send_message(chat_id=data["user_id"], text="✅ You have been unmuted in the relevant promo groups. Thanks for submitting your POP!")
         await update.message.reply_text(f"✅ Approved and uploaded for @{data['username']}.")
+
+        # Cleanup pending data
         del context.bot_data[f"pending_{user_id}"]
+
     except Exception as e:
         await update.message.reply_text(f"⚠️ Error: {str(e)}")
 
