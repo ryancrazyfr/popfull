@@ -1,6 +1,6 @@
 import telegram
 from telegram.ext import (
-    ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+    ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters, CallbackQueryHandler
 )
 from telegram import Update, ChatPermissions
 import os
