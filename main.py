@@ -835,6 +835,7 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=int(user_id),
                 text=message_to_send,
                 parse_mode=ParseMode.HTML
+                disable_web_page_preview=True
             )
             success += 1
         except Exception as e:
