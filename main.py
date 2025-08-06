@@ -65,31 +65,7 @@ drive_service = build("drive", "v3", credentials=drive_creds)
 REFRESH_IDS = [-1001512076600, -1001706140667, -1001867826270]  # your 3 refresh groups
 
 
-def get_last_friday():
-    today = datetime.today()
-    offset = (today.weekday() - 4) % 7  # Friday is weekday 4
-    last_friday = today - timedelta(days=offset)
-    return datetime.combine(last_friday.date(), datetime.min.time())
 
-
-def get_all_submitted_user_ids(sheet):
-    records = sheet.get_all_records()
-    submitted_ids = set()
-
-    start_of_week = get_last_friday()
-
-    for row in records:
-        try:
-            date_str = row["Date"]
-            time_str = row["Time"]
-            timestamp = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
-
-            if timestamp >= start_of_week:
-                submitted_ids.add(str(row["User ID"]))
-        except Exception as e:
-            print(f"Skipping row due to error: {e}")
-
-    return submitted_ids
 
 
 def get_or_create_user_folder(username):
@@ -315,6 +291,33 @@ async def getid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     title = update.effective_chat.title
     await update.message.reply_text(f"🆔 This group is *{title}*\nChat ID: `{chat_id}`", parse_mode="Markdown")
 
+def get_last_friday():
+    today = datetime.today()
+    offset = (today.weekday() - 4) % 7  # Friday is weekday 4
+    last_friday = today - timedelta(days=offset)
+    return datetime.combine(last_friday.date(), datetime.min.time())
+
+
+def get_all_submitted_user_ids(sheet):
+    records = sheet.get_all_records()
+    submitted_ids = set()
+
+    start_of_week = get_last_friday()
+
+    for row in records:
+        try:
+            date_str = row["Date"]
+            time_str = row["Time"]
+            timestamp = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
+
+            if timestamp >= start_of_week:
+                submitted_ids.add(str(row["User ID"]))
+        except Exception as e:
+            print(f"Skipping row due to error: {e}")
+
+    return submitted_ids
+
+
 
 def get_tracked_user_ids(sheet):
     records = sheet.get_all_records()
@@ -351,15 +354,6 @@ async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
         REMINDER_GROUP_ID,
         "⏰ Don’t forget to submit your POP screenshot before Friday to avoid getting muted!"
     )
-scheduler = AsyncIOScheduler()
-async def on_startup(app):
-    scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
-    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed,thu,fri", hour=8, minute=0),args=[app],timezone="UTC")
-    scheduler.add_job(send_refresh_reminders, CronTrigger(day=25, hour=8), args=[app])
-    scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[app])
-    scheduler.add_job(mute_non_refresh_submitters, CronTrigger(day=1, hour=0, minute=0), args =[app])  # Midnight on 1st
-    scheduler.start()
-    print("Scheduler started")
 
 async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
    
@@ -769,7 +763,17 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(f"✅ Sent to {success} users.\n❌ Failed for {failed} users.")
 
+scheduler = AsyncIOScheduler()
 
+async def on_startup(app):
+    scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
+    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed,thu,fri", hour=8, minute=0),args=[app],timezone="UTC")
+    scheduler.add_job(send_refresh_reminders, CronTrigger(day=25, hour=8), args=[app])
+    scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[app])
+    scheduler.add_job(mute_non_refresh_submitters, CronTrigger(day=1, hour=0, minute=0), args =[app])  # Midnight on 1st
+    scheduler.start()
+    print("Scheduler started")
+    
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
     app.add_handler(CommandHandler("start", start))
