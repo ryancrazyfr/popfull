@@ -151,6 +151,8 @@ async def handle_pop_selection(update: Update, context: ContextTypes.DEFAULT_TYP
     await query.answer()
 
     context.user_data['pop_day'] = 'friday' if query.data == 'pop_friday' else 'tuesday'
+    context.chat_data["expecting_photo"] = True  # ✅ This line is needed
+
     await query.edit_message_text("Great! Now please send your POP screenshot.")
 
 
