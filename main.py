@@ -396,48 +396,6 @@ async def test_pop_reminder(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("✅ POP reminder sent manually.")
 
     
-async def mute_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_USER_ID:
-        await update.message.reply_text("❌ You’re not authorized to run this command.")
-        return
-
-    if not context.args:
-        await update.message.reply_text("❗ Usage: /muteuser @username")
-        return
-
-    username = context.args[0].lstrip('@')
-
-    for group_id in GROUP_IDS:
-        try:
-            members = await context.bot.get_chat_administrators(group_id)
-            member = next(
-                (m.user for m in members if m.user.username == username), None
-            )
-
-            if not member:
-                chat_members = await context.bot.get_chat_members_count(group_id)
-                for i in range(chat_members):  # fallback scan
-                    try:
-                        user = await context.bot.get_chat_member(group_id, i)
-                        if user.user.username == username:
-                            member = user.user
-                            break
-                    except:
-                        continue
-
-            if member:
-                await context.bot.restrict_chat_member(
-                    group_id,
-                    member.id,
-                    permissions=ChatPermissions(can_send_messages=False)
-                )
-                await update.message.reply_text(f"🔇 @{username} has been muted in group {group_id}")
-            else:
-                await update.message.reply_text(f"⚠️ @{username} not found in group {group_id}")
-
-        except Exception as e:
-            await update.message.reply_text(f"❌ Error muting @{username} in {group_id}: {e}")
-
 async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
         await update.message.reply_text("❓ Please ask a question after the command. Example:\n/ask What is POP?")
@@ -823,7 +781,6 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+$"), approve))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+$"), reject))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-    app.add_handler(CommandHandler("muteuser", mute_user))
     app.add_handler(CommandHandler("ask", ask))
     app.add_handler(CommandHandler("testreminder", test_pop_reminder))
     app.add_handler(CommandHandler("vip_add", vip_add))
