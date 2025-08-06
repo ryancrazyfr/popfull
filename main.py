@@ -18,6 +18,7 @@ from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime, timedelta
 import openai
 from telegram.constants import ParseMode
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
@@ -137,8 +138,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
           
 
 async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.chat_data["expecting_photo"] = True
-    await update.message.reply_text("Please send your POP now.")
+    keyboard = [
+        [InlineKeyboardButton("Friday POP", callback_data='pop_friday')],
+        [InlineKeyboardButton("Tuesday POP", callback_data='pop_tuesday')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text("Which POP are you submitting?", reply_markup=reply_markup)
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Ignore photos from groups
