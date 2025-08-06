@@ -226,17 +226,15 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📤 POP submitted! Waiting for admin approval.")
 
 async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    
     if update.effective_chat.type != "private":
         return
-    
+
     if not context.chat_data.get("expecting_photo"):
         await update.message.reply_text("❗ Please tap /submitpop before sending your screen recording.")
         return
-        
 
     context.chat_data["expecting_photo"] = False
-    
+
     user = update.message.from_user
     username = user.username or f"user_{user.id}"
     video = update.message.video
@@ -254,7 +252,7 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "user_id": user.id,
         "filename": filename,
         "filepath": filepath,
-        "timestamp": timestamp
+        "timestamp": timestamp,
         "pop_day": pop_day
     }
 
@@ -263,14 +261,13 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
         video=open(filepath, "rb"),
         caption=(
             f"👀 *{pop_day.capitalize()} POP Submission from @{username}*\n\n"
-            f"Approve this Video\n"
+            f"Approve this video?\n"
             f"Reply with /approve_{user.id} or /reject_{user.id}"
         ),
         parse_mode="Markdown"
     )
 
     await update.message.reply_text("📤 Screen recording POP submitted! Waiting for admin approval.")
-
 
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
