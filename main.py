@@ -855,6 +855,13 @@ async def on_startup(app):
     scheduler.add_job(mute_non_refresh_submitters, CronTrigger(day=1, hour=0, minute=0), args =[app])  # Midnight on 1st
     scheduler.start()
     print("Scheduler started")
+
+
+async def friday_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(pop_links, parse_mode="Markdown", disable_web_page_preview=True)
+
+async def tuesdaypop_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(tuesday_links, parse_mode="Markdown", disable_web_page_preview=True)
     
 def main():
     
@@ -867,6 +874,8 @@ def main():
     app.add_handler(CommandHandler("submitpop", submitpop))
     app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern='^pop_'))
     app.add_handler(CommandHandler("getid", getid))
+    app.add_handler(CommandHandler("friday", friday_links))
+    app.add_handler(CommandHandler("tuesday", tuesdaypop_links))
     app.add_handler(CommandHandler("runcheck", runcheck))
     app.add_handler(CommandHandler("runfresh", run_fresh_command))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+$"), approve))
