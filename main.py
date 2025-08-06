@@ -49,7 +49,7 @@ TUESDAY_GROUP_IDS = [
 REMINDER_GROUP_ID = -1001664882105
 
 
-pop_links = """🔗 *Promote these links*
+pop_links = """🔗 *Friday POP*
 
 Sexy Baddies\nt.me/+tGBn9q_6Z-9jMTAx\n  
 Content Hub\nt.me/+F_BNXoMjPPhmNGEx\n  
@@ -57,6 +57,14 @@ Seductive Sirens\nt.me/+nvm1zwZz7FA1MTdh\n
 The Sluts Store\nt.me/+pkxiRKn2ZvcyMjI8\n  
 My Hot Friends\nt.me/+A47SCYOy2_MzOTcx\n  
 CumSlut Paradise\nt.me/+y5TaJPgVGvI1NzQ0\n  
+"""
+tuesday_links = """" *Tuesday POP** 
+
+Fashion dolls\nt.me/+d_NP9s67LjViYTAx\n
+College chicks\nt.me/+x3Lq01jlY_k3OWNh\n
+Content Palace\nt.me/+11zyCb_Ei-9mNjMx\n
+Natural Melons\nt.me/+Iu-R20OXD2NmMjNh\n
+Kitty Wet\nt.me/+H8aVpb7S33NiZmNh\n
 """
 if not os.path.exists(POP_DIR):
     os.makedirs(POP_DIR)
@@ -144,6 +152,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
           
     
     await update.message.reply_text(pop_links, parse_mode="HTML", disable_web_page_preview=True)
+    await update.message.reply_text(tuesday_links, parse_mode="HTML", disable_web_page_preview=True)
           
 
 async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
