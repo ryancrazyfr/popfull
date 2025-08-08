@@ -867,6 +867,7 @@ async def on_startup(app):
     scheduler.add_job(send_refresh_reminders, CronTrigger(day=25, hour=8), args=[app])
     scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[app])
     scheduler.add_job(mute_non_refresh_submitters, CronTrigger(day=1, hour=0, minute=0), args =[app])  # Midnight on 1st
+    scheduler.add_job(runcheck, CronTrigger(day_of_week='fri', hour=12, minute=0), args =[app])
     scheduler.start()
     print("Scheduler started")
 
