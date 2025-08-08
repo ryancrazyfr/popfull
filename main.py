@@ -174,34 +174,35 @@ async def handle_pop_selection(update: Update, context: ContextTypes.DEFAULT_TYP
 
     await query.edit_message_text("Great! Now please send your POP screenshot.")
 
-
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Ignore photos from groups
+    # Only allow photos in private chat
     if update.effective_chat.type != "private":
         return
 
-    # Only respond if expecting a photo
+    # Check if user is expected to send a photo
     if not context.chat_data.get("expecting_photo"):
-        await update.message.reply_text("❗ Please tap /submitpop before sending your pop.")
+        await update.message.reply_text("❗ Please tap /submitpop before sending your POP.")
         return
 
-    # Reset state
+    # Reset flag
     context.chat_data["expecting_photo"] = False
 
     user = update.message.from_user
     username = user.username or f"user_{user.id}"
     photo = update.message.photo[-1]
     file = await photo.get_file()
+
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     filename = f"{username}_{timestamp}.jpg"
     filepath = os.path.join(POP_DIR, filename)
     await file.download_to_drive(filepath)
 
-    # Get selected day
+    # Get which POP day this is for
     pop_day = context.user_data.get("pop_day", "friday")
+    key = f"pending_{user.id}_{pop_day}"
 
-    # Save to pending approval
-    context.bot_data[f"pending_{user.id}"] = {
+    # Save pending submission
+    context.bot_data[key] = {
         "username": username,
         "user_id": user.id,
         "filename": filename,
@@ -210,14 +211,14 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "pop_day": pop_day
     }
 
-    # Send to admin with POP day mentioned
+    # Notify admin with correct approve/reject format
     await context.bot.send_photo(
         chat_id=ADMIN_USER_ID,
         photo=open(filepath, "rb"),
         caption=(
             f"👀 *{pop_day.capitalize()} POP Submission from @{username}*\n\n"
-            f"Approve this screenshot?\n"
-            f"Reply with /approve_{user.id} or /reject_{user.id}"
+            f"✅ Approve: /approve_{user.id}_{pop_day}\n"
+            f"❌ Reject: /reject_{user.id}_{pop_day}"
         ),
         parse_mode="Markdown"
     )
@@ -272,30 +273,28 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         command = update.message.text.strip()
-        match = re.match(r"/approve_(\d+)", command)
+        match = re.match(r"/approve_(\d+)_(friday|tuesday)", command)
         if not match:
-            await update.message.reply_text("❌ Invalid approve command format.")
+            await update.message.reply_text("❌ Invalid approve command format.\nUse: /approve_<user_id>_friday or /approve_<user_id>_tuesday")
             return
 
-        user_id = match.group(1)
-        data = context.bot_data.get(f"pending_{user_id}")
+        user_id, pop_day = match.groups()
+        key = f"pending_{user_id}_{pop_day}"
+        data = context.bot_data.get(key)
 
         if not data:
-            await update.message.reply_text(f"❌ No pending submission found for user {user_id}.")
+            await update.message.reply_text(f"❌ No pending {pop_day} submission found for user {user_id}.")
             return
 
-        # Upload POP screenshot to Drive
+        # Upload screenshot or video to Google Drive
         drive_link = upload_to_drive(data["username"], data["filename"], data["filepath"])
 
-        # Prepare timestamps
+        # Timestamps
         now = datetime.now()
         date_str = now.strftime('%Y-%m-%d')
         time_str = now.strftime('%H:%M:%S')
 
-        # Detect whether submission was for Friday or Tuesday
-        pop_day = data.get("pop_day", "friday")  # fallback to 'friday' if missing
-
-        # Log to the correct sheet
+        # Choose correct sheet & group list
         if pop_day == "tuesday":
             tuesday_sheet.append_row([
                 data["username"],
@@ -304,7 +303,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 time_str,
                 drive_link
             ])
-            unmute_groups = TUESDAY_GROUP_IDS  # unmute only in Tuesday groups
+            unmute_groups = TUESDAY_GROUP_IDS
         else:
             sheet.append_row([
                 data["username"],
@@ -313,14 +312,14 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 time_str,
                 drive_link
             ])
-            unmute_groups = GROUP_IDS  # unmute only in Friday groups
+            unmute_groups = GROUP_IDS
 
-        # Unmute the user in relevant groups
+        # Unmute user in relevant groups
         for group_id in unmute_groups:
             try:
                 await context.bot.restrict_chat_member(
-                    group_id,
-                    int(user_id),
+                    chat_id=group_id,
+                    user_id=int(user_id),
                     permissions=ChatPermissions(
                         can_send_messages=True,
                         can_send_media_messages=True,
@@ -329,15 +328,17 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
                 )
             except Exception as e:
-                print(f"Error unmuting user in group {group_id}: {e}")
+                print(f"❌ Error unmuting user {user_id} in group {group_id}: {e}")
 
-        # Notify user and admin
-        await context.bot.send_message(chat_id=data["user_id"], text="✅ Your POP has been approved and logged.")
-        await context.bot.send_message(chat_id=data["user_id"], text="✅ You have been unmuted in the relevant promo groups. Thanks for submitting your POP!")
-        await update.message.reply_text(f"✅ Approved and uploaded for @{data['username']}.")
+        # Notify user
+        await context.bot.send_message(chat_id=int(user_id), text="✅ Your POP has been approved and logged.")
+        await context.bot.send_message(chat_id=int(user_id), text=f"✅ You have been unmuted in the {pop_day.capitalize()} promo groups. Thanks for submitting!")
 
-        # Cleanup pending data
-        del context.bot_data[f"pending_{user_id}"]
+        # Notify admin
+        await update.message.reply_text(f"✅ Approved and logged for @{data['username']} ({pop_day.capitalize()}).")
+
+        # Clean up pending
+        del context.bot_data[key]
 
     except Exception as e:
         await update.message.reply_text(f"⚠️ Error: {str(e)}")
