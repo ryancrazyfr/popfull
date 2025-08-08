@@ -275,26 +275,25 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
         command = update.message.text.strip()
         match = re.match(r"/approve_(\d+)_(friday|tuesday)", command)
         if not match:
-            await update.message.reply_text("❌ Invalid approve command format.\nUse: /approve_<user_id>_friday or /approve_<user_id>_tuesday")
+            await update.message.reply_text("❌ Invalid approve command format.")
             return
 
-        user_id, pop_day = match.groups()
+        user_id = match.group(1)
+        pop_day = match.group(2)
         key = f"pending_{user_id}_{pop_day}"
         data = context.bot_data.get(key)
 
         if not data:
-            await update.message.reply_text(f"❌ No pending {pop_day} submission found for user {user_id}.")
+            await update.message.reply_text(f"❌ No pending submission found for user {user_id} ({pop_day}).")
             return
 
-        # Upload screenshot or video to Google Drive
+        # Upload to Drive
         drive_link = upload_to_drive(data["username"], data["filename"], data["filepath"])
-
-        # Timestamps
         now = datetime.now()
         date_str = now.strftime('%Y-%m-%d')
         time_str = now.strftime('%H:%M:%S')
 
-        # Choose correct sheet & group list
+        # Log to correct sheet
         if pop_day == "tuesday":
             tuesday_sheet.append_row([
                 data["username"],
@@ -314,12 +313,12 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ])
             unmute_groups = GROUP_IDS
 
-        # Unmute user in relevant groups
+        # Unmute the user
         for group_id in unmute_groups:
             try:
                 await context.bot.restrict_chat_member(
-                    chat_id=group_id,
-                    user_id=int(user_id),
+                    group_id,
+                    int(user_id),
                     permissions=ChatPermissions(
                         can_send_messages=True,
                         can_send_media_messages=True,
@@ -328,16 +327,12 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
                 )
             except Exception as e:
-                print(f"❌ Error unmuting user {user_id} in group {group_id}: {e}")
+                print(f"Error unmuting user in group {group_id}: {e}")
 
-        # Notify user
+        # Notify
         await context.bot.send_message(chat_id=int(user_id), text="✅ Your POP has been approved and logged.")
-        await context.bot.send_message(chat_id=int(user_id), text=f"✅ You have been unmuted in the {pop_day.capitalize()} promo groups. Thanks for submitting!")
-
-        # Notify admin
-        await update.message.reply_text(f"✅ Approved and logged for @{data['username']} ({pop_day.capitalize()}).")
-
-        # Clean up pending
+        await context.bot.send_message(chat_id=int(user_id), text="✅ You have been unmuted in the relevant promo groups. Thanks for submitting your POP!")
+        await update.message.reply_text(f"✅ Approved and uploaded for @{data['username']}.")
         del context.bot_data[key]
 
     except Exception as e:
