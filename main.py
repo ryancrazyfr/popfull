@@ -169,10 +169,11 @@ async def handle_pop_selection(update: Update, context: ContextTypes.DEFAULT_TYP
     query = update.callback_query
     await query.answer()
 
-    context.user_data['pop_day'] = 'friday' if query.data == 'pop_friday' else 'tuesday'
+    pop_day = 'friday' if query.data == 'pop_friday' else 'tuesday'
+    context.user_data['pop_day'] = pop_day
     context.chat_data["expecting_photo"] = True  # ✅ This line is needed
 
-    await query.edit_message_text(f"Great! Now please send your {pop_day.capitalize()}  POP screenshot.")
+    await query.edit_message_text(f"Great! Now please send your {pop_day.capitalize()} POP screenshot.")
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Only allow photos in private chat
