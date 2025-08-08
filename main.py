@@ -172,7 +172,7 @@ async def handle_pop_selection(update: Update, context: ContextTypes.DEFAULT_TYP
     context.user_data['pop_day'] = 'friday' if query.data == 'pop_friday' else 'tuesday'
     context.chat_data["expecting_photo"] = True  # ✅ This line is needed
 
-    await query.edit_message_text(f"Great! Now please send your {data['pop_day'].capitalize()}  POP screenshot.")
+    await query.edit_message_text(f"Great! Now please send your {pop_day.capitalize()}  POP screenshot.")
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Only allow photos in private chat
@@ -330,7 +330,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 print(f"Error unmuting user in group {group_id}: {e}")
 
         # Notify
-        await context.bot.send_message(chat_id=int(user_id), text="✅ Your {data['pop_day'].capitalize()} POP has been approved and logged.")
+        await context.bot.send_message(chat_id=int(user_id), text=f"✅ Your {data['pop_day'].capitalize()} POP has been approved and logged.")
         await context.bot.send_message(chat_id=int(user_id), text="✅ You have been unmuted in the relevant promo groups. Thanks for submitting your POP!")
         await update.message.reply_text(f"✅ Approved and uploaded for @{data['username']}.")
         del context.bot_data[key]
