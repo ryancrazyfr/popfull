@@ -340,26 +340,43 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"⚠️ Error: {str(e)}")
 
 async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.type != "private":
+        return
+
+    match = re.match(r"/reject(\d+)(friday|tuesday)", update.message.text.strip())
+    if not match:
+        await update.message.reply_text("❌ Invalid reject command format.")
+        return
+
+    user_id = int(match.group(1))
+    pop_day = match.group(2)
+
+    key = f"pending_{user_id}_{pop_day}"
+    pending_data = context.bot_data.get(key)
+
+    if not pending_data:
+        await update.message.reply_text(f"❌ No pending submission found for user {user_id} ({pop_day}).")
+        return
+
     try:
-        command = update.message.text.strip()
-        match = re.match(r"/reject_(\d+)", command)
-        if not match:
-            await update.message.reply_text("❌ Invalid reject command format.")
-            return
+        # Notify user of rejection
+        await context.bot.send_message(
+            chat_id=user_id,
+            text=f"❌ Your {pop_day.capitalize()} POP submission was rejected by the admin. Please send it again."
+        )
+        await update.message.reply_text(f"🚫 {pop_day.capitalize()} POP rejected and user notified.")
 
-        user_id = match.group(1)
-        data = context.bot_data.get(f"pending_{user_id}")
+        # Delete the rejected image from Drive (optional)
+        filepath = pending_data.get("filepath")
+        if filepath:
+            os.remove(filepath)
 
-        if not data:
-            await update.message.reply_text(f"❌ No pending submission found for user {user_id}.")
-            return
+        # Remove pending data
+        del context.bot_data[key]
 
-        await context.bot.send_message(chat_id=data["user_id"], text="❌ Your POP has been rejected. Please dm @sexydolladmin")
-        await update.message.reply_text(f"🚫 Rejected submission from @{data['username']}.")
-        del context.bot_data[f"pending_{user_id}"]
     except Exception as e:
-        await update.message.reply_text(f"⚠️ Error: {str(e)}")
-
+        await update.message.reply_text(f"❌ Error rejecting POP: {e}")
+        
 async def getid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     title = update.effective_chat.title
