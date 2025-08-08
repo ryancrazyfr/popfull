@@ -433,7 +433,7 @@ async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     )
               await context.bot.send_message(
                     chat_id=user_id,
-                    text="🔇 You’ve been muted in the group for not submitting POP!"
+                    text="🔇 New POP week started! You’ve been muted in Friday pop groups. Please send your pop to get unmuted!"
                     )
             except Exception as e:
                     print(f"❌ Error muting {user_id} in {group_id}: {e}")
