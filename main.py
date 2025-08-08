@@ -880,6 +880,7 @@ def main():
     app.add_handler(CommandHandler("testreminder", test_pop_reminder))
     app.add_handler(CommandHandler("vip_add", vip_add))
     app.add_handler(MessageHandler(filters.VIDEO, handle_video))
+    app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
 
     app.add_handler(CommandHandler("refresh", refresh_command))
