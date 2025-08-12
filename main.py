@@ -343,7 +343,7 @@ async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != "private":
         return
 
-    match = re.match(r"/reject(\d+)(friday|tuesday)", update.message.text.strip())
+    match = re.match(r"/reject_(\d+)_(friday|tuesday)", update.message.text.strip())
     if not match:
         await update.message.reply_text("❌ Invalid reject command format.")
         return
