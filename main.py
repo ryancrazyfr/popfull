@@ -414,31 +414,61 @@ def get_tracked_user_ids(sheet):
     records = sheet.get_all_records()
     return {str(row["User ID"]) for row in records if "User ID" in row}
 
+
+async def mute_non_submitters_friday(context: ContextTypes.DEFAULT_TYPE):
+    try:
+        submitted_ids = get_all_submitted_user_ids(sheet)
+        tracked_users = get_tracked_user_ids(sheet)
+
+        muted = 0
+        errors = 0
+
+        for user_id in tracked_users:
+            if user_id not in submitted_ids:
+                # Mute in all Friday groups
+                for group_id in GROUP_IDS:
+                    try:
+                        await context.bot.restrict_chat_member(
+                            chat_id=group_id,
+                            user_id=int(user_id),
+                            permissions=ChatPermissions(
+                                can_send_messages=False,
+                                can_send_media_messages=False,
+                                can_send_other_messages=False,
+                                can_add_web_page_previews=False,
+                            ),
+                        )
+                    except Exception as e:
+                        errors += 1
+                        print(f"❌ Error muting {user_id} in {group_id}: {e}")
+
+                # Send ONE message after muting across all groups
+                try:
+                    await context.bot.send_message(
+                        chat_id=int(user_id),
+                        text="🔕 You've been muted in Friday pop groups. Please send your POP to this bot to get unmuted.",
+                    )
+                    muted += 1
+                except Exception as e:
+                    print(f"❌ Error sending mute DM to {user_id}: {e}")
+
+        # Notify admin
+        await context.bot.send_message(
+            chat_id=ADMIN_USER_ID,
+            text=f"📊 Friday runcheck: muted {muted} user(s). Errors: {errors}."
+        )
+
+    except Exception as e:
+        # Bubble up any unexpected failures to admin
+        await context.bot.send_message(
+            chat_id=ADMIN_USER_ID,
+            text=f"❌ Friday runcheck failed: {e}"
+                            )
 async def runcheck(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_USER_ID:
         return
-
-    submitted_ids = get_all_submitted_user_ids(sheet)
-    tracked_users = get_tracked_user_ids(sheet)
-
-    
-    for user_id in tracked_users:
-        if user_id not in submitted_ids:
-            try:
-              for group_id in GROUP_IDS:
-                await context.bot.restrict_chat_member(
-                        group_id,
-                        int(user_id),
-                        permissions=ChatPermissions(can_send_messages=False)
-                    )
-              await context.bot.send_message(
-                    chat_id=user_id,
-                    text="🔇 New POP week started! You’ve been muted in Friday pop groups. Please send your pop to get unmuted!"
-                    )
-            except Exception as e:
-                    print(f"❌ Error muting {user_id} in {group_id}: {e}")
-
-    await update.message.reply_text("✅ Runcheck complete. Users who didn’t submit POP since last Friday have been muted.")
+    await mute_non_submitters_friday(context)
+    await update.message.reply_text("✅ Friday runcheck executed.")
 
 async def send_reminder(context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
@@ -945,12 +975,13 @@ scheduler = AsyncIOScheduler()
 
 async def on_startup(app):
     scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
-    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="mon,tue,wed,thu,fri", hour=8, minute=0),args=[app],timezone="UTC")
+    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="thu,fri", hour=20, minute=0),args=[app],timezone="UTC")
     scheduler.add_job(send_refresh_reminders, CronTrigger(day=25, hour=8), args=[app])
     scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[app])
     scheduler.add_job(mute_non_refresh_submitters, CronTrigger(day=1, hour=0, minute=0), args =[app])  # Midnight on 1st
     # Example: 00:05 on Wednesday (i.e., right after Tuesday ends)
     scheduler.add_job(mute_non_submitters_tuesday, CronTrigger(day_of_week='wed', hour=0, minute=5),args=[app])
+    scheduler.add_job(mute_non_submitters_friday, CronTrigger(day_of_week='sat', hour=0, minute=5),args=[app])
     scheduler.start()
     print("Scheduler started")
 
