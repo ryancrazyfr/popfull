@@ -488,9 +488,7 @@ async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
                     chat_id=int(user_id),
                     text=(
                         "📌 *Reminder*: You haven't submitted your POP for this week!\n\n"
-                        "Please promote the groups and send your screenshot using:\n"
-                        "`/submitpop`\n\n"
-                        "💬 If you face any issues, DM [@sexydolladmin](https://t.me/sexydolladmin)\n\n"
+                        "Please promote the groups using the links down below and send your pop to this bot to start posting again.\n\n"
                     
                     ),
                     parse_mode='Markdown',
@@ -591,6 +589,33 @@ async def runcheck2(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await mute_non_submitters_tuesday(context)
     await update.message.reply_text("✅ Tuesday runcheck executed.")
+
+async def send_tuesday_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
+   
+    submitted_ids =  get_all_submitted_user_ids_tuesday(tuesday_sheet)
+    tracked_users = get_tracked_user_tuesday_ids(tuesday_sheet)
+
+    for user_id in tracked_users:
+        if user_id not in submitted_ids:
+            try:
+                await context.bot.send_message(
+                    chat_id=int(user_id),
+                    text=(
+                        "📌 *Reminder*: You haven't submitted your POP for this week!\n\n"
+                        "Please promote the groups and send your pop to this bot and get unmuted asap.Please use the links down below.\n\n"
+                    
+                    ),
+                    parse_mode='Markdown',
+                )
+                # Second message: Group links
+                await context.bot.send_message(
+                    chat_id=int(user_id),
+                    text=tuesday_links,  # Assuming this is a string of links
+                    parse_mode='HTML',
+                    disable_web_page_preview=True
+                )
+            except Exception as e:
+                print(f"⚠️ Failed to remind user {user_id}: {e}")
     
     
 async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -975,7 +1000,8 @@ scheduler = AsyncIOScheduler()
 
 async def on_startup(app):
     scheduler.add_job(send_reminder, CronTrigger(day_of_week='tue,thu', hour=10, minute=0), args=[app])
-    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="thu,fri", hour=20, minute=0),args=[app],timezone="UTC")
+    scheduler.add_job(send_pop_reminder,CronTrigger(day_of_week="sun,mon", hour=20, minute=0),args=[app],timezone="UTC")
+    scheduler.add_job(send_tuesday_pop_reminder,CronTrigger(day_of_week="wed,sat", hour=20, minute=0),args=[app],timezone="UTC")
     scheduler.add_job(send_refresh_reminders, CronTrigger(day=25, hour=8), args=[app])
     scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[app])
     scheduler.add_job(mute_non_refresh_submitters, CronTrigger(day=1, hour=0, minute=0), args =[app])  # Midnight on 1st
