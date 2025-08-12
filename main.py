@@ -504,9 +504,11 @@ def get_all_submitted_user_ids_tuesday(tuesday_sheet):
             print(f"Skipping row (Tuesday) due to error: {e}")
 
     return submitted_ids
-def get_tracked_user_tuesday_ids(tueaday_sheet):
-    records = sheet.get_all_records()
+    
+def get_tracked_user_tuesday_ids(tuesday_sheet):
+    records = tuesday_sheet.get_all_records()
     return {str(row["User ID"]) for row in records if "User ID" in row}
+    
 async def mute_non_submitters_tuesday(context: ContextTypes.DEFAULT_TYPE):
     try:
         submitted_ids = get_all_submitted_user_ids_tuesday(tuesday_sheet)
