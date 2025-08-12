@@ -218,8 +218,8 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         photo=open(filepath, "rb"),
         caption=(
             f"👀 *{pop_day.capitalize()} POP Submission from @{username}*\n\n"
-            f"✅ Approve: /approve_{user.id}_{pop_day}\n"
-            f"❌ Reject: /reject_{user.id}_{pop_day}"
+            f"✅ Approve: /approve__{user.id}__{pop_day}\n"
+            f"❌ Reject: /reject__{user.id}__{pop_day}"
         ),
         parse_mode="Markdown"
     )
