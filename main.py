@@ -963,7 +963,7 @@ def main():
     app.add_handler(CommandHandler("friday", friday_links))
     app.add_handler(CommandHandler("tuesday", tuesdaypop_links))
     app.add_handler(CommandHandler("runcheck", runcheck))
-    app.add_handler(CommandHandler("runcheck2", rudrive_2))
+    app.add_handler(CommandHandler("runcheck2", runcheck2))
     app.add_handler(CommandHandler("runfresh", run_fresh_command))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+_(friday|tuesday)"), approve))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+_(friday|tuesday)"), reject))
