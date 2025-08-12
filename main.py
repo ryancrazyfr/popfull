@@ -479,7 +479,77 @@ async def send_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
 async def test_pop_reminder(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await send_pop_reminder(context)
     await update.message.reply_text("✅ POP reminder sent manually.")
+    
+def get_last_tuesday():
+    # Monday=0, Tuesday=1, ... Sunday=6
+    today = datetime.today()
+    offset = (today.weekday() - 1) % 7   # 1 == Tuesday
+    last_tuesday = today - timedelta(days=offset)
+    return datetime.combine(last_tuesday.date(), datetime.min.time())
 
+def get_all_submitted_user_ids_tuesday(tuesday_sheet):
+    records = tuesday_sheet.get_all_records()
+    submitted_ids = set()
+
+    start_of_cycle = get_last_tuesday()
+
+    for row in records:
+        try:
+            date_str = row["Date"]
+            time_str = row["Time"]
+            ts = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
+            if ts >= start_of_cycle:
+                submitted_ids.add(str(row["User ID"]))
+        except Exception as e:
+            print(f"Skipping row (Tuesday) due to error: {e}")
+
+    return submitted_ids
+def get_tracked_user_tuesday_ids(tueaday_sheet):
+    records = sheet.get_all_records()
+    return {str(row["User ID"]) for row in records if "User ID" in row}
+async def mute_non_submitters_tuesday(context: ContextTypes.DEFAULT_TYPE):
+    try:
+        submitted_ids = get_all_submitted_user_ids_tuesday(tuesday_sheet)
+        tracked_users = get_tracked_user_tuesday_ids(tuesday_sheet)  # same source list you use for Friday
+
+        muted, errors = 0, 0
+        for user_id in tracked_users:
+            if user_id not in submitted_ids:
+                for group_id in TUESDAY_GROUP_IDS:
+                    try:
+                        await context.bot.restrict_chat_member(
+                            chat_id=group_id,
+                            user_id=int(user_id),
+                            permissions=ChatPermissions(
+                                can_send_messages=False,
+                                can_send_media_messages=False,
+                                can_send_other_messages=False,
+                                can_add_web_page_previews=False
+                            )
+                        )
+                    except Exception as e:
+                        errors += 1
+                        print(f"❌ Error muting {user_id} in {group_id}: {e}")
+                muted += 1
+
+        # Optional: notify admin in DM
+        await context.bot.send_message(
+            chat_id=ADMIN_USER_ID,
+            text=f"🔇 Tuesday runcheck: muted {muted} user(s). Errors: {errors}."
+        )
+    except Exception as e:
+        print(f"Tuesday mute task failed: {e}")
+        try:
+            await context.bot.send_message(ADMIN_USER_ID, f"⚠️ Tuesday mute task failed: {e}")
+        except:
+            pass
+
+async def runcheck2(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_USER_ID:
+        return
+    await mute_non_submitters_tuesday(context)
+    await update.message.reply_text("✅ Tuesday runcheck executed.")
+    
     
 async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args:
@@ -867,6 +937,8 @@ async def on_startup(app):
     scheduler.add_job(send_refresh_reminders, CronTrigger(day=25, hour=8), args=[app])
     scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[app])
     scheduler.add_job(mute_non_refresh_submitters, CronTrigger(day=1, hour=0, minute=0), args =[app])  # Midnight on 1st
+    # Example: 00:05 on Wednesday (i.e., right after Tuesday ends)
+    scheduler.add_job(mute_non_submitters_tuesday, CronTrigger(day_of_week='wed', hour=0, minute=5),args=[app])
     scheduler.start()
     print("Scheduler started")
 
@@ -891,6 +963,7 @@ def main():
     app.add_handler(CommandHandler("friday", friday_links))
     app.add_handler(CommandHandler("tuesday", tuesdaypop_links))
     app.add_handler(CommandHandler("runcheck", runcheck))
+    app.add_handler(CommandHandler("runcheck1", runcheck1))
     app.add_handler(CommandHandler("runfresh", run_fresh_command))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+_(friday|tuesday)"), approve))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+_(friday|tuesday)"), reject))
