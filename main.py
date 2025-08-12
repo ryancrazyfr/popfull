@@ -528,7 +528,13 @@ async def mute_non_submitters_tuesday(context: ContextTypes.DEFAULT_TYPE):
                                 can_send_other_messages=False,
                                 can_add_web_page_previews=False
                             )
+                                         
+                        )   
+                        await context.bot.send_message(
+                              chat_id=user_id,
+                              text="🔇 You’ve been muted in Tuesday pop groups. Please send your pop to get unmuted!"
                         )
+                        
                     except Exception as e:
                         errors += 1
                         print(f"❌ Error muting {user_id} in {group_id}: {e}")
