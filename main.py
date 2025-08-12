@@ -512,11 +512,12 @@ def get_tracked_user_tuesday_ids(tuesday_sheet):
 async def mute_non_submitters_tuesday(context: ContextTypes.DEFAULT_TYPE):
     try:
         submitted_ids = get_all_submitted_user_ids_tuesday(tuesday_sheet)
-        tracked_users = get_tracked_user_tuesday_ids(tuesday_sheet)  # same source list you use for Friday
+        tracked_users = get_tracked_user_tuesday_ids(tuesday_sheet)
 
         muted, errors = 0, 0
         for user_id in tracked_users:
             if user_id not in submitted_ids:
+                # Mute in all Tuesday groups
                 for group_id in TUESDAY_GROUP_IDS:
                     try:
                         await context.bot.restrict_chat_member(
@@ -528,30 +529,33 @@ async def mute_non_submitters_tuesday(context: ContextTypes.DEFAULT_TYPE):
                                 can_send_other_messages=False,
                                 can_add_web_page_previews=False
                             )
-                                         
-                        )   
-                      await context.bot.send_message(
-                            chat_id=user_id,
-                            text="🔇 You’ve been muted in Tuesday pop groups. Please send your pop to get unmuted!"
-                            )
-                        
+                        )
                     except Exception as e:
                         errors += 1
                         print(f"❌ Error muting {user_id} in {group_id}: {e}")
-                muted += 1
 
-        # Optional: notify admin in DM
+                # Send one message AFTER muting in all groups
+                try:
+                    await context.bot.send_message(
+                        chat_id=int(user_id),
+                        text="🔇 You’ve been muted in Tuesday POP groups. Please send your POP to get unmuted!"
+                    )
+                    muted += 1
+                except Exception as e:
+                    print(f"❌ Error sending mute message to {user_id}: {e}")
+
+        # Notify admin
         await context.bot.send_message(
             chat_id=ADMIN_USER_ID,
             text=f"🔇 Tuesday runcheck: muted {muted} user(s). Errors: {errors}."
         )
+
     except Exception as e:
         print(f"Tuesday mute task failed: {e}")
-        try:
-            await context.bot.send_message(ADMIN_USER_ID, f"⚠️ Tuesday mute task failed: {e}")
-        except:
-            pass
-
+        await context.bot.send_message(
+            chat_id=ADMIN_USER_ID,
+            text=f"⚠️ Tuesday mute task failed: {e}"
+        )
 async def runcheck2(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_USER_ID:
         return
