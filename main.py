@@ -141,8 +141,8 @@ WELCOME_TEXT = (
 
 def role_keyboard():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🆕 I'm New", callback_data="role:new"),
-         InlineKeyboardButton("💼 I'm Experienced", callback_data="role:exp")]
+        [InlineKeyboardButton("I'm New", callback_data="role:new"),
+         InlineKeyboardButton("I'm Experienced", callback_data="role:exp")]
     ])
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
