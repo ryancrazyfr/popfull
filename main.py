@@ -166,16 +166,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         photo=Welcome_MSG_URL,  # can be file_id, HTTP URL, or open("path", "rb")
         caption=WELCOME_TEXT,
         reply_markup=role_keyboard(),
-        parse_mode="Markdown"
+        parse_mode="MarkdownV"
     )
         
     
-
-    
-    
-    
-
-
 async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
