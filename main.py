@@ -263,8 +263,6 @@ async def handle_video_fallback(update: Update, context: ContextTypes.DEFAULT_TY
 def _admin_only(user_id: int) -> bool:
     return user_id == ADMIN_USER_ID
 
-
-
 async def approve_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Admin gate
     if not _admin_only(update.effective_user.id):
@@ -282,30 +280,35 @@ async def approve_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("ℹ️ That user isn’t marked as pending, sending links anyway…")
 
     try:
+        # Send welcome message
         await context.bot.send_message(
             chat_id=target_id,
-            text="✅ *You’re verified!*\n\nJoin the model chat\n\nhttps://t.me/+Mw5-xF7ZvMw3MDkx\n\nbelow are your POP links. Please promote these links somewhere you can get buyers to join and send the screenshot to this bot.\n\n use the command \submitpop",
-            parse_mode="HTML",
+            text="✅ *You’re verified!*\n\nJoin the model chat\n\nhttps://t.me/+Mw5-xF7ZvMw3MDkx\n\nBelow are your POP links. Please promote these links somewhere you can get buyers to join and send the screenshot to this bot.\n\nUse the command /submitpop",
+            parse_mode="Markdown",
             disable_web_page_preview=True
-            
         )
+
+        # Send POP links
         await context.bot.send_message(
-            chat_id=query.message.chat_id,
+            chat_id=target_id,
             text=pop_links,
             parse_mode="HTML",
-            disable_web_page_preview=True,
+            disable_web_page_preview=True
         )
+
+        # Send Tuesday links
         await context.bot.send_message(
-            chat_id=query.message.chat_id,
+            chat_id=target_id,
             text=tuesday_links,
             parse_mode="HTML",
-            disable_web_page_preview=True,
+            disable_web_page_preview=True
         )
-        
+
         pending.discard(target_id)
         await update.message.reply_text(f"✅ Approved and sent links to {target_id}.")
     except Exception as e:
         await update.message.reply_text(f"❌ Couldn’t DM {target_id}: {e}")
+
 
 
 async def reject_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
