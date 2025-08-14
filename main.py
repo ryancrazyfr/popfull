@@ -1183,6 +1183,7 @@ def main():
 
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(handle_role_choice, pattern=r"^role:(new|exp)$"))
     app.add_handler(CommandHandler("approve_new", approve_new))
     app.add_handler(CommandHandler("reject_new", reject_new))
     app.add_handler(CommandHandler("pending_new", list_pending))   # optional
@@ -1202,8 +1203,8 @@ def main():
     app.add_handler(CommandHandler("vip_add", vip_add))
     app.add_handler(MessageHandler(filters.VIDEO, handle_video))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(handle_role_choice, pattern=r"^role:(new|exp)$"))
+    
+    
 
 # live circle video (video note)
     app.add_handler(MessageHandler(filters.VIDEO_NOTE & filters.ChatType.PRIVATE, handle_video_note))
