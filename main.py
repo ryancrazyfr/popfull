@@ -141,8 +141,8 @@ WELCOME_TEXT = (
 
 def role_keyboard():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("I'm New", callback_data="role:new"),
-         InlineKeyboardButton("I'm Experienced", callback_data="role:exp")]
+        [InlineKeyboardButton("Verifying For the network", callback_data="role:new"),
+         InlineKeyboardButton("POP Submission", callback_data="role:exp")]
     ])
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -168,11 +168,16 @@ async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
         # Send links as plain text so underscores in URLs don't break Markdown
         await context.bot.send_message(
             chat_id=query.message.chat_id,
-            text=POP_LINKS,
+            text=pop_links,
+            disable_web_page_preview=True,
+        )
+        await context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=tuesday_links,
             disable_web_page_preview=True,
         )
         # Optional: immediately allow POP flow
-        context.chat_data["expecting_photo"] = True
+        
         return
 
     # New → ask for a live circle verification and wait for it
