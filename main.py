@@ -285,7 +285,7 @@ async def approve_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(
             chat_id=target_id,
             text="✅ *You’re verified!*\n\nHere are your POP links. Please promote all:\n\n" + pop_links,
-            parse_mode="Markdown",
+            parse_mode="HTML",
             disable_web_page_preview=True
         )
         await context.bot.send_message(
