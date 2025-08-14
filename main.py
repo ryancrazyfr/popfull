@@ -135,13 +135,13 @@ def upload_to_drive(username, filename, filepath):
 
 
 WELCOME_TEXT = (
-    """✨ Welcome to the Silk & Sin Network ✨\n\n
+    """✨ Welcome to the Silk & Sin Network ✨\n
 
 No drama. No nonsense. No scammers.\n
-Only elegance, safety, and serious money. 💼💋\n\n
+Only elegance, safety, and serious money. 💼💋\n
 
-This is your private stage — where verified, high-spending buyers meet confident, professional models.\n
-Our bot handles POPs, promotions, and keeps the flow smooth, so you can focus on what you do best.\n\n
+This is your private stage where verified, high-spending buyers meet confident, professional models.\n
+Our bot handles POPs, promotions, and keeps the flow smooth, so you can focus on what you do best.\n
 
 Silk & Sin isn’t just a network…\n
 It’s your VIP lounge for success. 💎\n\n"""
