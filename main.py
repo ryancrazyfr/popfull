@@ -1183,7 +1183,9 @@ def main():
 
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(handle_role_choice, pattern=r"^role:(new|exp)$"))
+
+    # Give this a higher priority (group=0) and an exact pattern
+    app.add_handler(CallbackQueryHandler(handle_role_choice, pattern=r"^role:(new|exp)$"),group=0,)
     app.add_handler(CommandHandler("approve_new", approve_new))
     app.add_handler(CommandHandler("reject_new", reject_new))
     app.add_handler(CommandHandler("pending_new", list_pending))   # optional
