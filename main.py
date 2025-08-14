@@ -131,7 +131,7 @@ def upload_to_drive(username, filename, filepath):
     return uploaded_file.get("webViewLink")
     
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
 
 
 WELCOME_TEXT = (
