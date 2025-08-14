@@ -192,9 +192,7 @@ async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     )
 
     
-
 async def handle_video_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Only handle in private and only if we asked for it
     if update.effective_chat.type != "private":
         return
     if not context.chat_data.get("awaiting_live_circle"):
@@ -203,34 +201,34 @@ async def handle_video_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not vn:
         return
 
-    # Stop expecting more
     context.chat_data["awaiting_live_circle"] = False
-
     user = update.effective_user
-    caption = (
-        f"🆕 Live circle verification from @{user.username or user.id}\n"
-        f"User ID: {user.id}"
-    )
 
-    # Forward the video note to admin (download+send ensures it always reaches)
     file = await vn.get_file()
     path = await file.download_to_drive()
+
+    caption = (
+        f"🆕 Live circle verification from @{user.username or user.id}\n"
+        f"User ID: {user.id}\n\n"
+        f"Admin: approve with `/approve_new {user.id}` or reject with `/reject_new {user.id}`"
+    )
+
     try:
         with open(path, "rb") as f:
             await context.bot.send_video_note(chat_id=ADMIN_USER_ID, video_note=f)
-        await context.bot.send_message(chat_id=ADMIN_USER_ID, text=caption)
+        await context.bot.send_message(
+            chat_id=ADMIN_USER_ID, text=caption, parse_mode="Markdown"
+        )
     finally:
-        # optional: clean up local file
-        import os
         try: os.remove(path)
         except Exception: pass
-    # Mark user as pending approval
-    context.bot_data.setdefault("pending_new", set()).add(update.effective_user.id)
+
+    # mark as pending
+    context.bot_data.setdefault("pending_new", set()).add(user.id)
 
     await update.message.reply_text(
-        "✅ Thanks! I sent your verification to an admin. You’ll receive POP links after approval."
+        "🧾 Thanks! I sent your verification to an admin. You’ll receive POP links once approved."
     )
-
 # (optional) also accept normal video as fallback if the user can’t send a circle video
 async def handle_video_fallback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != "private":
