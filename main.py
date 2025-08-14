@@ -163,12 +163,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_photo(
         chat_id=update.effective_chat.id,
-        photo=Welcome_MSG_URL,  # can be file_id, HTTP URL, or open("path", "rb")
-        caption=WELCOME_TEXT,
-        reply_markup=role_keyboard(),
-        parse_mode=None
-    )
+        photo=Welcome_MSG_URL  # can be file_id, HTTP URL, or open("path", "rb")
         
+    )
+    await update.message.reply_markdown(WELCOME_TEXT, reply_markup=role_keyboard())    
     
 async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
