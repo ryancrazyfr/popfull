@@ -148,7 +148,7 @@ It’s your VIP lounge for success. 💎\n\n"""
     "Choose one to continue:"
 )
 
-Welcome_MSG_URL = "https://drive.google.com/uc?export=view&id=1BCg9621_cO04NDBtK6tpl5dFv1oFOpZw"
+Welcome_MSG_URL = "https://imgur.com/a/MV79r1I"
 
 def role_keyboard():
     return InlineKeyboardMarkup([
