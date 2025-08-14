@@ -153,23 +153,32 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer()
+    await query.answer()  # acknowledge tap
     chat_id = query.message.chat_id
 
     if query.data == "role:exp":
-        # send POP links immediately
+        # Edit the original message and then send links
         await query.edit_message_text("Great! Here are your POP links 👇")
-        await context.bot.send_message(chat_id=chat_id, text=pop_links, parse_mode="Markdown", disable_web_page_preview=True)
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=pop_links,
+            parse_mode="Markdown",
+            disable_web_page_preview=True
+        )
         return
 
-    # role:new — ask for a *live circle* video (video note)
-    context.chat_data["awaiting_live_circle"] = True
-    await query.edit_message_markdown(
-        "🆕 **New model verification**\n"
-        "Please send a **live circle video** (tap the microphone icon and switch to video note) saying:\n"
-        "“Hi Silk and Sin bot, today’s date, and my menu.”\n\n"
-        "Once I receive it, I’ll pass it to an admin for approval."
-    )
+    if query.data == "role:new":
+        # Flag that we expect a live-circle video next
+        context.chat_data["awaiting_live_circle"] = True
+        await query.edit_message_markdown(
+            "🆕 **New model verification**\n\n"
+            "Please send a **live circle video** (hold the mic icon and swipe to circle) saying:\n"
+            "“Hi Silk and Sin bot, today’s date, and my menu.”\n\n"
+            "Once I receive it, I’ll pass it to an admin for approval."
+        )
+        return
+
+    
 
 async def handle_video_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Only handle in private and only if we asked for it
