@@ -152,7 +152,7 @@ Welcome_MSG_URL = "https://imgur.com/a/MV79r1I"
 
 def role_keyboard():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("Verifying For the network", callback_data="role:new"),
+        [InlineKeyboardButton("Verify For the network", callback_data="role:new"),
          InlineKeyboardButton("POP Submission", callback_data="role:exp")]
     ])
 
