@@ -151,32 +151,40 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_markdown(WELCOME_TEXT, reply_markup=role_keyboard(), disable_web_page_preview=True)
 
+
+
 async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer()  # acknowledge tap
-    chat_id = query.message.chat_id
+    await query.answer()
 
-    if query.data == "role:exp":
-        # Edit the original message and then send links
+    # Record role on the user
+    role = "exp" if query.data == "role:exp" else "new"
+    context.user_data["role"] = role
+
+    if role == "exp":
+        # Experienced → send links; no waiting for verification
+        
         await query.edit_message_text("Great! Here are your POP links 👇")
+        # Send links as plain text so underscores in URLs don't break Markdown
         await context.bot.send_message(
-            chat_id=chat_id,
-            text=pop_links,
-            parse_mode="Markdown",
-            disable_web_page_preview=True
+            chat_id=query.message.chat_id,
+            text=POP_LINKS,
+            disable_web_page_preview=True,
         )
+        # Optional: immediately allow POP flow
+        context.chat_data["expecting_photo"] = True
         return
 
-    if query.data == "role:new":
-        # Flag that we expect a live-circle video next
-        context.chat_data["awaiting_live_circle"] = True
-        await query.edit_message_markdown(
-            "🆕 **New model verification**\n\n"
-            "Please send a **live circle video** (hold the mic icon and swipe to circle) saying:\n"
-            "“Hi Silk and Sin bot, today’s date, and my menu.”\n\n"
-            "Once I receive it, I’ll pass it to an admin for approval."
-        )
-        return
+    # New → ask for a live circle verification and wait for it
+    context.chat_data["awaiting_live_circle"] = True
+    
+    await query.edit_message_text(
+        "🆕 **New model verification**\n\n"
+        "Please send a *live circle video* (hold mic and swipe to circle) saying:\n"
+        "“Hi Silk and Sin bot, today’s date, and my menu.”\n\n"
+        "Once I receive it, I’ll pass it to an admin for approval.",
+        parse_mode="Markdown",
+    )
 
     
 
