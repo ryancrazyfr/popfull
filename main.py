@@ -148,6 +148,8 @@ It’s your VIP lounge for success. 💎\n\n"""
     "Choose one to continue:"
 )
 
+Welcome_MSG_URL = https://drive.google.com/file/d/1BCg9621_c0O4NDBtK6tpl5dFv1oF0pZw/view?usp=drivesdk
+
 def role_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("Verifying For the network", callback_data="role:new"),
@@ -157,9 +159,22 @@ def role_keyboard():
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Only interact in private chat
     if update.effective_chat.type != "private":
-        return
-    await update.message.reply_markdown(WELCOME_TEXT, reply_markup=role_keyboard(), disable_web_page_preview=True)
+     return
 
+    await context.bot.send_photo(
+        chat_id=update.effective_chat.id,
+        photo=Welcome_MSG_URL,  # can be file_id, HTTP URL, or open("path", "rb")
+        caption=caption,
+        reply_markup=reply_markup,
+        parse_mode="Markdown"
+    )
+        
+    await update.message.reply_markdown(WELCOME_TEXT, reply_markup=role_keyboard(), disable_web_page_preview=True)
+    
+
+    # Send image with caption and buttons
+    
+    )
 
 
 async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
