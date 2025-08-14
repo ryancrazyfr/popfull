@@ -263,32 +263,31 @@ async def handle_video_fallback(update: Update, context: ContextTypes.DEFAULT_TY
 def _admin_only(user_id: int) -> bool:
     return user_id == ADMIN_USER_ID
 
+
+
 async def approve_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # admin gate
-    uid = update.effective_user.id
-    if not _admin_only(uid):
+    # Admin gate
+    if not _admin_only(update.effective_user.id):
         return
 
-    # parse: /approve_new <user_id>
-    if not context.args or not context.args[0].isdigit():
-        await update.message.reply_text("Usage: /approve_new_(\d+)")
+    match = re.match(r"^/approve_new_(\d+)$", update.message.text.strip())
+    if not match:
+        await update.message.reply_text("Usage: /approve_new_<user_id>")
         return
 
-    target_id = int(context.args[0])
+    target_id = int(match.group(1))
     pending = context.bot_data.setdefault("pending_new", set())
+
     if target_id not in pending:
-        # still allow sending links, but tell admin it's not in queue
         await update.message.reply_text("ℹ️ That user isn’t marked as pending, sending links anyway…")
 
-    # DM the user with links
     try:
         await context.bot.send_message(
             chat_id=target_id,
-            text=("✅ **You’re verified!**\n\nHere are your POP links. Please promote all:\n\n" + pop_links),
+            text="✅ *You’re verified!*\n\nHere are your POP links. Please promote all:\n\n" + pop_links,
             parse_mode="Markdown",
-            disable_web_page_preview=True,
+            disable_web_page_preview=True
         )
-        # optional: welcome tip
         await context.bot.send_message(
             chat_id=target_id,
             text="If you need help, DM @sexydolladmin. Have a great week! 💖"
@@ -298,31 +297,31 @@ async def approve_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"❌ Couldn’t DM {target_id}: {e}")
 
+
 async def reject_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # admin gate
-    uid = update.effective_user.id
-    if not _admin_only(uid):
+    # Admin gate
+    if not _admin_only(update.effective_user.id):
         return
 
-    # parse: /reject_new <user_id> [reason…]
-    if not context.args or not context.args[0].isdigit():
-        await update.message.reply_text("Usage: /reject_new_(\d+) [reason]")
+    match = re.match(r"^/reject_new_(\d+)$", update.message.text.strip())
+    if not match:
+        await update.message.reply_text("Usage: /reject_new_<user_id>")
         return
 
-    target_id = int(context.args[0])
-    reason = " ".join(context.args[1:]).strip() or "Please resend a clear live circle with today’s date and your menu."
+    target_id = int(match.group(1))
+    pending = context.bot_data.setdefault("pending_new", set())
 
     try:
         await context.bot.send_message(
             chat_id=target_id,
-            text=f"❌ Your verification needs another try.\nReason: {reason}\n\nSend a **live circle** video again saying your menu and today’s date."
+            text="❌ Your verification request was *rejected*.\n\nPlease contact @sexydolladmin if you think this was a mistake.",
+            parse_mode="Markdown"
         )
-        await update.message.reply_text(f"↩️ Rejection message sent to {target_id}.")
-        # keep them in pending so they can resend, or remove if you prefer:
-        # context.bot_data.setdefault("pending_new", set()).discard(target_id)
+        pending.discard(target_id)
+        await update.message.reply_text(f"❌ Rejected and notified {target_id}.")
     except Exception as e:
         await update.message.reply_text(f"❌ Couldn’t DM {target_id}: {e}")
-
+        
 async def list_pending(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # optional helper: /pending_new
     uid = update.effective_user.id
@@ -1206,8 +1205,7 @@ def main():
 
     # Give this a higher priority (group=0) and an exact pattern
     app.add_handler(CallbackQueryHandler(handle_role_choice, pattern=r"^role:(new|exp)$"),group=0,)
-    app.add_handler(CommandHandler("approve_new", approve_new))
-    app.add_handler(CommandHandler("reject_new", reject_new))
+    
     app.add_handler(CommandHandler("pending_new", list_pending))   # optional
     app.add_handler(CommandHandler("broadcast", broadcast))
     app.add_handler(CommandHandler("submitpop", submitpop))
