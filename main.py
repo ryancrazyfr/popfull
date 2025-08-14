@@ -164,17 +164,16 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_photo(
         chat_id=update.effective_chat.id,
         photo=Welcome_MSG_URL,  # can be file_id, HTTP URL, or open("path", "rb")
-        caption=caption,
-        reply_markup=reply_markup,
+        caption=WELCOME_TEXT,
+        reply_markup=role_keyboard(),
         parse_mode="Markdown"
     )
         
-    await update.message.reply_markdown(WELCOME_TEXT, reply_markup=role_keyboard(), disable_web_page_preview=True)
     
 
-    # Send image with caption and buttons
     
-    )
+    
+    
 
 
 async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
