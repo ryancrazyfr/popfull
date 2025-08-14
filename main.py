@@ -1250,8 +1250,9 @@ def main():
     app.add_handler(CommandHandler("start", start))
 
     # Give this a higher priority (group=0) and an exact pattern
-    app.add_handler(CallbackQueryHandler(handle_role_choice, pattern=r"^role:(new|exp)$"),group=0,)
-    
+    # Handlers
+
+    app.add_handler(CallbackQueryHandler(handle_role_choice, pattern="^role:"))
     app.add_handler(CommandHandler("pending_new", list_pending))   # optional
     app.add_handler(CommandHandler("broadcast", broadcast))
     app.add_handler(CommandHandler("submitpop", submitpop))
