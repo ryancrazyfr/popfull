@@ -210,7 +210,7 @@ async def handle_video_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
     caption = (
         f"🆕 Live circle verification from @{user.username or user.id}\n"
         f"User ID: {user.id}\n\n"
-        f"Admin: approve with `/approve_new {user.id}` or reject with `/reject_new {user.id}`"
+        f"Admin: approve with `/approve_new_{user.id}` or reject with `/reject_new_{user.id}`"
     )
 
     try:
@@ -271,7 +271,7 @@ async def approve_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # parse: /approve_new <user_id>
     if not context.args or not context.args[0].isdigit():
-        await update.message.reply_text("Usage: /approve_new <user_id>")
+        await update.message.reply_text("Usage: /approve_new_(\d+)")
         return
 
     target_id = int(context.args[0])
@@ -306,7 +306,7 @@ async def reject_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # parse: /reject_new <user_id> [reason…]
     if not context.args or not context.args[0].isdigit():
-        await update.message.reply_text("Usage: /reject_new <user_id> [reason]")
+        await update.message.reply_text("Usage: /reject_new_(\d+) [reason]")
         return
 
     target_id = int(context.args[0])
@@ -1233,7 +1233,8 @@ def main():
 # optional fallback normal videos
     app.add_handler(MessageHandler(filters.VIDEO & filters.ChatType.PRIVATE, handle_video_fallback))
 
-
+    app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_new_\d+$"), approve_new))
+    app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_new_\d+$"), reject_new))
     app.add_handler(CommandHandler("refresh", refresh_command))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))
