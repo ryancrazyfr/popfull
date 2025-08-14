@@ -520,15 +520,25 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
             except Exception as e:
                 print(f"Error unmuting user in group {group_id}: {e}")
 
+        # Check if they were "new"
+        role = context.bot_data.get("user_roles", {}).get(int(user_id))
+        if role == "new":
+            extra_note = "\n\n📌 Please request to join the groups through the same links."
+        else:
+            extra_note = ""
+
         # Notify
-        await context.bot.send_message(chat_id=int(user_id), text=f"✅ Your {data['pop_day'].capitalize()} POP has been approved and logged.")
-        await context.bot.send_message(chat_id=int(user_id), text="✅ You have been unmuted in the relevant promo groups. Thanks for submitting your POP!")
+        await context.bot.send_message(
+            chat_id=int(user_id),
+            text=f"✅ Your {data['pop_day'].capitalize()} POP has been approved and logged."
+                 f"\n✅ You have been unmuted in the relevant promo groups. Thanks for submitting your POP!"
+                 f"{extra_note}"
+        )
         await update.message.reply_text(f"✅ Approved and uploaded for @{data['username']}.")
         del context.bot_data[key]
 
     except Exception as e:
         await update.message.reply_text(f"⚠️ Error: {str(e)}")
-
 async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != "private":
         return
