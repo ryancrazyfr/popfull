@@ -132,30 +132,188 @@ def upload_to_drive(username, filename, filepath):
     
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    welcome_msg = (
-        "👋 Hello! Welcome to the Pop Bot of Silk and Sin Network.\n\n"
-        "This bot is the new way of submitting POP – simple, automated, and efficient.\n\n" 
-        "🚀 If you want a custom bot like this built for your group or business, contact @sexydolladmin\n\n"
-        "📌 *What is POP?*\n"
-        "POP (Proof of Promo) is a screenshot or recording you take after promoting our group links "
-        "on your own channel or another platform. It helps keep our traffic strong!\n\n"
-        "🛠 To submit your weekly POP:\n\n"
-        "1. Tap /submitpop\n"
-        "2. Select which pop you're submitting\n"
-        "3. Send your POP to this bot\n"
-        "4. wait for admin approval\n"
-        "5. if your pop is rejected, please send again\n\n"
-        "POP is due on every Friday\n\n"
-        "📎 Below are the group links you need to promote 👇"
-        
-    )
-    await update.message.reply_markdown(welcome_msg)
-          
-    
-    await update.message.reply_text(pop_links, parse_mode="HTML", disable_web_page_preview=True)
-    await update.message.reply_text(tuesday_links, parse_mode="HTML", disable_web_page_preview=True)
-          
 
+
+WELCOME_TEXT = (
+    "👋 **Welcome to the Silk & Sin Network!**\n\n"
+    "Choose one to continue:"
+)
+
+def role_keyboard():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🆕 I'm New", callback_data="role:new"),
+         InlineKeyboardButton("💼 I'm Experienced", callback_data="role:exp")]
+    ])
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Only interact in private chat
+    if update.effective_chat.type != "private":
+        return
+    await update.message.reply_markdown(WELCOME_TEXT, reply_markup=role_keyboard(), disable_web_page_preview=True)
+
+async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    chat_id = query.message.chat_id
+
+    if query.data == "role:exp":
+        # send POP links immediately
+        await query.edit_message_text("Great! Here are your POP links 👇")
+        await context.bot.send_message(chat_id=chat_id, text=pop_links, parse_mode="Markdown", disable_web_page_preview=True)
+        return
+
+    # role:new — ask for a *live circle* video (video note)
+    context.chat_data["awaiting_live_circle"] = True
+    await query.edit_message_markdown(
+        "🆕 **New model verification**\n"
+        "Please send a **live circle video** (tap the microphone icon and switch to video note) saying:\n"
+        "“Hi Silk and Sin bot, today’s date, and my menu.”\n\n"
+        "Once I receive it, I’ll pass it to an admin for approval."
+    )
+
+async def handle_video_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Only handle in private and only if we asked for it
+    if update.effective_chat.type != "private":
+        return
+    if not context.chat_data.get("awaiting_live_circle"):
+        return
+    vn = update.message.video_note
+    if not vn:
+        return
+
+    # Stop expecting more
+    context.chat_data["awaiting_live_circle"] = False
+
+    user = update.effective_user
+    caption = (
+        f"🆕 Live circle verification from @{user.username or user.id}\n"
+        f"User ID: {user.id}"
+    )
+
+    # Forward the video note to admin (download+send ensures it always reaches)
+    file = await vn.get_file()
+    path = await file.download_to_drive()
+    try:
+        with open(path, "rb") as f:
+            await context.bot.send_video_note(chat_id=ADMIN_USER_ID, video_note=f)
+        await context.bot.send_message(chat_id=ADMIN_USER_ID, text=caption)
+    finally:
+        # optional: clean up local file
+        import os
+        try: os.remove(path)
+        except Exception: pass
+    # Mark user as pending approval
+    context.bot_data.setdefault("pending_new", set()).add(update.effective_user.id)
+
+    await update.message.reply_text(
+        "✅ Thanks! I sent your verification to an admin. You’ll receive POP links after approval."
+    )
+
+# (optional) also accept normal video as fallback if the user can’t send a circle video
+async def handle_video_fallback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.type != "private":
+        return
+    if not context.chat_data.get("awaiting_live_circle"):
+        return
+    vid = update.message.video
+    if not vid:
+        return
+    context.chat_data["awaiting_live_circle"] = False
+
+    user = update.effective_user
+    caption = (
+        f"🆕 *Fallback video* verification from @{user.username or user.id}\n"
+        f"User ID: {user.id}"
+    )
+
+    file = await vid.get_file()
+    path = await file.download_to_drive()
+    try:
+        with open(path, "rb") as f:
+            await context.bot.send_video(chat_id=ADMIN_USER_ID, video=f, caption=caption, parse_mode="Markdown")
+    finally:
+        import os
+        try: os.remove(path)
+        except Exception: pass
+
+    await update.message.reply_text("✅ Thanks! I sent your video to an admin for review.")
+    
+
+
+def _admin_only(user_id: int) -> bool:
+    return user_id == ADMIN_USER_ID
+
+async def approve_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # admin gate
+    uid = update.effective_user.id
+    if not _admin_only(uid):
+        return
+
+    # parse: /approve_new <user_id>
+    if not context.args or not context.args[0].isdigit():
+        await update.message.reply_text("Usage: /approve_new <user_id>")
+        return
+
+    target_id = int(context.args[0])
+    pending = context.bot_data.setdefault("pending_new", set())
+    if target_id not in pending:
+        # still allow sending links, but tell admin it's not in queue
+        await update.message.reply_text("ℹ️ That user isn’t marked as pending, sending links anyway…")
+
+    # DM the user with links
+    try:
+        await context.bot.send_message(
+            chat_id=target_id,
+            text=("✅ **You’re verified!**\n\nHere are your POP links. Please promote all:\n\n" + pop_links),
+            parse_mode="Markdown",
+            disable_web_page_preview=True,
+        )
+        # optional: welcome tip
+        await context.bot.send_message(
+            chat_id=target_id,
+            text="If you need help, DM @sexydolladmin. Have a great week! 💖"
+        )
+        pending.discard(target_id)
+        await update.message.reply_text(f"✅ Approved and sent links to {target_id}.")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Couldn’t DM {target_id}: {e}")
+
+async def reject_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # admin gate
+    uid = update.effective_user.id
+    if not _admin_only(uid):
+        return
+
+    # parse: /reject_new <user_id> [reason…]
+    if not context.args or not context.args[0].isdigit():
+        await update.message.reply_text("Usage: /reject_new <user_id> [reason]")
+        return
+
+    target_id = int(context.args[0])
+    reason = " ".join(context.args[1:]).strip() or "Please resend a clear live circle with today’s date and your menu."
+
+    try:
+        await context.bot.send_message(
+            chat_id=target_id,
+            text=f"❌ Your verification needs another try.\nReason: {reason}\n\nSend a **live circle** video again saying your menu and today’s date."
+        )
+        await update.message.reply_text(f"↩️ Rejection message sent to {target_id}.")
+        # keep them in pending so they can resend, or remove if you prefer:
+        # context.bot_data.setdefault("pending_new", set()).discard(target_id)
+    except Exception as e:
+        await update.message.reply_text(f"❌ Couldn’t DM {target_id}: {e}")
+
+async def list_pending(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # optional helper: /pending_new
+    uid = update.effective_user.id
+    if not _admin_only(uid):
+        return
+    pending = context.bot_data.get("pending_new", set())
+    if not pending:
+        await update.message.reply_text("🟩 No pending new‑model verifications.")
+        return
+    await update.message.reply_text("🟨 Pending user IDs:\n" + "\n".join(map(str, sorted(pending))))
+    
 async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("Friday POP", callback_data='pop_friday')],
@@ -1025,6 +1183,9 @@ def main():
 
     app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("approve_new", approve_new))
+    app.add_handler(CommandHandler("reject_new", reject_new))
+    app.add_handler(CommandHandler("pending_new", list_pending))   # optional
     app.add_handler(CommandHandler("broadcast", broadcast))
     app.add_handler(CommandHandler("submitpop", submitpop))
     app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern='^pop_'))
@@ -1041,13 +1202,20 @@ def main():
     app.add_handler(CommandHandler("vip_add", vip_add))
     app.add_handler(MessageHandler(filters.VIDEO, handle_video))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(handle_role_choice, pattern=r"^role:(new|exp)$"))
+
+# live circle video (video note)
+    app.add_handler(MessageHandler(filters.VIDEO_NOTE & filters.ChatType.PRIVATE, handle_video_note))
+# optional fallback normal videos
+    app.add_handler(MessageHandler(filters.VIDEO & filters.ChatType.PRIVATE, handle_video_fallback))
 
 
     app.add_handler(CommandHandler("refresh", refresh_command))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))
     app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_refresh_added))
-    
+
     
     app.run_polling()
 
