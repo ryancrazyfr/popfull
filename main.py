@@ -284,7 +284,9 @@ async def approve_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await context.bot.send_message(
             chat_id=target_id,
-            text="✅ *You’re verified!*\n\nJoin the model chat\n\nhttps://t.me/+Mw5-xF7ZvMw3MDkx\n\nbelow are your POP links. Please promote these links somewhere you can get buyers to join and send the screenshot to this bot.\n\n"
+            text="✅ *You’re verified!*\n\nJoin the model chat\n\nhttps://t.me/+Mw5-xF7ZvMw3MDkx\n\nbelow are your POP links. Please promote these links somewhere you can get buyers to join and send the screenshot to this bot.\n\n use the command \submitpop",
+            parse_mode="HTML",
+            disable_web_page_preview=True
             
         )
         await context.bot.send_message(
