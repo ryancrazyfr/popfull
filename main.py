@@ -185,8 +185,8 @@ async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     
     await query.edit_message_text(
         "🆕 **New model verification**\n\n"
-        "Please send a *live circle video* (hold mic and swipe to circle) saying:\n"
-        "“Hi Silk and Sin bot, today’s date, and my menu.”\n\n"
+        "Please send a *live circle video* (tap the mic and switch to cam) saying:\n"
+        "“Hi Silk and Sin bot, today’s date showing full face.”\n\n"
         "Once I receive it, I’ll pass it to an admin for approval.",
         parse_mode="Markdown",
     )
@@ -284,14 +284,22 @@ async def approve_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await context.bot.send_message(
             chat_id=target_id,
-            text="✅ *You’re verified!*\n\nHere are your POP links. Please promote all:\n\n" + pop_links,
-            parse_mode="HTML",
-            disable_web_page_preview=True
+            text="✅ *You’re verified!*\n\nJoin the model chat\n\nhttps://t.me/+Mw5-xF7ZvMw3MDkx\n\nbelow are your POP links. Please promote these links somewhere you can get buyers to join and send the screenshot to this bot.\n\n"
+            
         )
         await context.bot.send_message(
-            chat_id=target_id,
-            text="If you need help, DM @sexydolladmin. Have a great week! 💖"
+            chat_id=query.message.chat_id,
+            text=pop_links,
+            parse_mode="HTML",
+            disable_web_page_preview=True,
         )
+        await context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=tuesday_links,
+            parse_mode="HTML",
+            disable_web_page_preview=True,
+        )
+        
         pending.discard(target_id)
         await update.message.reply_text(f"✅ Approved and sent links to {target_id}.")
     except Exception as e:
