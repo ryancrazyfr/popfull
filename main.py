@@ -19,6 +19,7 @@ from datetime import datetime, timedelta
 import openai
 from telegram.constants import ParseMode
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from functools import wraps
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
@@ -29,6 +30,7 @@ SHEET_NAME = "POP Submissions"
 POP_DIR = "pop_submissions"
 DRIVE_FOLDER_ID = "1f63NmpGcktoNdEsy25OQsYvcfJeO5vpP"
 ADMIN_USER_ID = 6276794389
+ADMIN_USER_IDS = {ADMIN_USER_ID}  # add more IDs if needed
 
 GROUP_IDS = [
     -1001906279445,  # The Sluts Store
@@ -100,7 +102,19 @@ drive_service = build("drive", "v3", credentials=drive_creds)
 REFRESH_IDS = [-1001512076600, -1001706140667, -1001867826270]  # your 3 refresh groups
 
 
+def is_admin(user_id: int) -> bool:
+    return user_id in ADMIN_USER_IDS
 
+def require_admin(func):
+    @wraps(func)
+    async def wrapper(update, context, *args, **kwargs):
+        user = getattr(update, "effective_user", None)
+        if not user or not is_admin(user.id):
+            # Silently ignore non-admins (or send a message if you prefer)
+            # await update.message.reply_text("⛔ Not authorized.")
+            return
+        return await func(update, context, *args, **kwargs)
+    return wrapper
 
 
 def get_or_create_user_folder(username):
