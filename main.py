@@ -66,6 +66,22 @@ Content Palace\nt.me/+11zyCb_Ei-9mNjMx\n
 Natural Melons\nt.me/+Iu-R20OXD2NmMjNh\n
 Kitty Wet\nt.me/+H8aVpb7S33NiZmNh\n
 """
+
+refresh_links = """Regular/buyers only groups ( the groups below aren't pop groups please don't do pop with these links)\n\n 
+
+👠 Wickedly Wild (191 members) +5 buyers  +2 monthly Refresh 
+ https://t.me/+IfdNFBq3cZs5MzQx\n
+
+🌟 Star Hoes (146 members) +5 buyers +2 monthly Refresh 
+https://t.me/+Mk3KCg1_wP44MTFh\n
+
+😈 Buyers Paradise (180 members) + 10 buyers 
+https://t.me/+x5HoQ9Bud3FjMTNh\n
+
+💋 Pleasure Palace (209 members) +10 buyers 
+https://t.me/+bOmZq5ODKslhMWFh
+"""
+
 if not os.path.exists(POP_DIR):
     os.makedirs(POP_DIR)
 
@@ -343,7 +359,14 @@ async def approve_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             disable_web_page_preview=True
         )
-
+        
+        await context.bot.send_message(
+            chat_id=target_id,
+            text=refresh_links,
+            parse_mode="HTML",
+            disable_web_page_preview=True
+        )
+        
         pending.discard(target_id)
         await update.message.reply_text(f"✅ Approved and sent links to {target_id}.")
     except Exception as e:
