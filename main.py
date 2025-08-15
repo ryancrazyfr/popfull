@@ -212,6 +212,7 @@ async def handle_video_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     if not context.chat_data.get("awaiting_live_circle"):
         return
+
     vn = update.message.video_note
     if not vn:
         return
@@ -224,26 +225,31 @@ async def handle_video_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     caption = (
         f"🆕 Live circle verification from @{user.username or user.id}\n"
-        f"User ID: {user.id}\n\n"
+        f"User ID: `{user.id}`\n\n"
         f"Admin: approve with `/approve_new_{user.id}` or reject with `/reject_new_{user.id}`"
     )
 
     try:
+        # Send as a normal video so it can have a caption
         with open(path, "rb") as f:
-            await context.bot.send_video_note(chat_id=ADMIN_USER_ID, video_note=f)
-        await context.bot.send_message(
-            chat_id=ADMIN_USER_ID, text=caption, parse_mode="Markdown"
-        )
+            await context.bot.send_video(
+                chat_id=ADMIN_USER_ID,
+                video=f,
+                caption=caption,
+                parse_mode="Markdown"
+            )
     finally:
-        try: os.remove(path)
-        except Exception: pass
+        try:
+            os.remove(path)
+        except Exception:
+            pass
 
-    # mark as pending
+    # Mark as pending
     context.bot_data.setdefault("pending_new", set()).add(user.id)
 
     await update.message.reply_text(
         "🧾 Thanks! I sent your verification to an admin. You’ll receive POP links once approved."
-    )
+        )
 # (optional) also accept normal video as fallback if the user can’t send a circle video
 async def handle_video_fallback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != "private":
