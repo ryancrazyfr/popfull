@@ -77,6 +77,7 @@ spreadsheet = client.open(SHEET_NAME)
 sheet = spreadsheet.sheet1  # For POP Submissions
 refresh_sheet = spreadsheet.worksheet("Refresh_Groups")
 tuesday_sheet = spreadsheet.worksheet("Tuesday_Pop")
+tracked_sheet = spreadsheet.worksheet("tracked")  # For logging bot
 drive_creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build("drive", "v3", credentials=drive_creds)
 
@@ -156,18 +157,36 @@ def role_keyboard():
          InlineKeyboardButton("POP Submission", callback_data="role:exp")]
     ])
 
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Only interact in private chat
     if update.effective_chat.type != "private":
-     return
+        return
 
+    user = update.effective_user
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    try:
+        tracked_sheet.append_row([
+            str(user.id),
+            user.username or "",
+            f"{user.first_name or ''} {user.last_name or ''}".strip(),
+            now
+        ])
+    except Exception as e:
+        print(f"Error logging to tracked sheet: {e}")
+
+    # Send image first
     await context.bot.send_photo(
         chat_id=update.effective_chat.id,
         photo=Welcome_MSG_URL  # can be file_id, HTTP URL, or open("path", "rb")
-        
     )
-    await update.message.reply_markdown(WELCOME_TEXT, reply_markup=role_keyboard())    
-    
+
+    # Send welcome text + buttons
+    await update.message.reply_markdown(
+        WELCOME_TEXT,
+        reply_markup=role_keyboard()
+    )
 async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
