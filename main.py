@@ -1312,7 +1312,6 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(handle_role_choice, pattern="^role:"))
     app.add_handler(CommandHandler("pending_new", list_pending))
-    app.add_handler(CommandHandler("schedule_post", schedule_post))
     app.add_handler(CommandHandler("broadcast", broadcast))
     app.add_handler(CommandHandler("submitpop", submitpop))
     app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern="^pop_"))
@@ -1329,9 +1328,7 @@ def main():
     app.add_handler(CommandHandler("vip_add", vip_add))
     app.add_handler(MessageHandler(filters.VIDEO, handle_video))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-    app.add_handler(MessageHandler(filters.ALL & filters.ChatType.PRIVATE, handle_post_content))
-    app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_time))
-
+    
     # live circle video (video note)
     app.add_handler(MessageHandler(filters.VIDEO_NOTE & filters.ChatType.PRIVATE, handle_video_note))
     # optional fallback normal videos
