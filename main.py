@@ -95,7 +95,9 @@ spreadsheet = client.open(SHEET_NAME)
 sheet = spreadsheet.sheet1  # For POP Submissions
 refresh_sheet = spreadsheet.worksheet("Refresh_Groups")
 tuesday_sheet = spreadsheet.worksheet("Tuesday_Pop")
-tracked_sheet = spreadsheet.worksheet("tracked")  # For logging bot
+tracked_sheet = spreadsheet.worksheet("tracked")
+ScheduledPosts = spreadsheet.worksheet("ScheduledPosts")
+# For logging bot
 drive_creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build("drive", "v3", credentials=drive_creds)
 
@@ -1285,6 +1287,7 @@ async def on_startup(app):
     # Example: 00:05 on Wednesday (i.e., right after Tuesday ends)
     scheduler.add_job(mute_non_submitters_tuesday, CronTrigger(day_of_week='wed', hour=0, minute=5),args=[app])
     scheduler.add_job(mute_non_submitters_friday, CronTrigger(day_of_week='sat', hour=0, minute=5),args=[app])
+    scheduler.add_job(run_scheduled_posts, "interval", minutes=1)
     scheduler.start()
     print("Scheduler started")
 
@@ -1294,7 +1297,99 @@ async def friday_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def tuesdaypop_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(tuesday_links, parse_mode="Markdown", disable_web_page_preview=True)
+
+AUTOPOST_GROUPS = GROUP_IDS + TUESDAY_GROUP_IDS + REFRESH_IDS
+SCHEDULED_TAB = "ScheduledPosts"
+
+# Step 1: Command to schedule
+async def schedule_post(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("📩 Send me the post (text, photo, or video).")
+    context.chat_data["scheduling_post"] = True
+
+
+# Step 2: Capture post content
+async def handle_post_content(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.chat_data.get("scheduling_post"):
+        return
     
+    user = update.effective_user
+    post_text = update.message.text or ""
+    media_file_id = None
+
+    if update.message.photo:
+        media_file_id = update.message.photo[-1].file_id
+    elif update.message.video:
+        media_file_id = update.message.video.file_id
+
+    # Save temporarily
+    context.user_data["pending_post"] = {
+        "user_id": user.id,
+        "username": user.username,
+        "text": post_text,
+        "media": media_file_id,
+    }
+
+    await update.message.reply_text("⏰ When should I post this? (format: YYYY-MM-DD HH:MM)")
+    context.chat_data["awaiting_time"] = True
+    context.chat_data["scheduling_post"] = False
+
+
+async def handle_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.chat_data.get("awaiting_time"):
+        return
+
+    try:
+        scheduled_time = datetime.strptime(update.message.text.strip(), "%Y-%m-%d %H:%M")
+    except:
+        await update.message.reply_text("⚠️ Invalid format. Use YYYY-MM-DD HH:MM")
+        return
+
+    post = context.user_data.get("pending_post")
+    if not post:
+        await update.message.reply_text("⚠️ No post data found.")
+        return
+
+    # Save to Google Sheet
+    SCHEDULE_SHEET.append_row([
+        str(post["user_id"]),
+        post["username"] or "",
+        post["text"],
+        post["media"] or "",
+        scheduled_time.strftime("%Y-%m-%d %H:%M"),
+        "pending"
+    ])
+
+    await update.message.reply_text("✅ Post scheduled successfully!")
+    context.chat_data["awaiting_time"] = False
+    context.user_data.pop("pending_post", None)
+
+
+
+# Step 4: Scheduler job
+async def run_scheduled_posts(context: ContextTypes.DEFAULT_TYPE):
+    rows = SCHEDULE_SHEET.get_all_values()[1:]  # skip header
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    for i, row in enumerate(rows, start=2):
+        user_id, username, text, media, scheduled_time, status = row
+        if status == "pending" and scheduled_time == now:
+            for group_id in AUTOPOST_GROUPS:
+                try:
+                    if media:
+                        await context.bot.send_photo(chat_id=group_id, photo=media, caption=text)
+                    else:
+                        await context.bot.send_message(chat_id=group_id, text=text)
+                except Exception as e:
+                    print(f"Error posting: {e}")
+            
+            # Mark as done
+            SCHEDULE_SHEET.update_cell(i, 6, "posted")
+
+# Start scheduler
+
+
+
+
 def main():
     
     async def post_init(app):
@@ -1308,6 +1403,7 @@ def main():
 
     app.add_handler(CallbackQueryHandler(handle_role_choice, pattern="^role:"))
     app.add_handler(CommandHandler("pending_new", list_pending))   # optional
+    app.add_handler(CommandHandler("schedule_post", schedule_post))
     app.add_handler(CommandHandler("broadcast", broadcast))
     app.add_handler(CommandHandler("submitpop", submitpop))
     app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern='^pop_'))
@@ -1324,7 +1420,8 @@ def main():
     app.add_handler(CommandHandler("vip_add", vip_add))
     app.add_handler(MessageHandler(filters.VIDEO, handle_video))
     app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-    
+    app.add_handler(MessageHandler(filters.ALL & filters.ChatType.PRIVATE, handle_post_content))
+    app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_time))
     
 
 # live circle video (video note)
