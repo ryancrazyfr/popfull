@@ -1299,8 +1299,8 @@ async def tuesdaypop_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def main():
-    async def post_init(app):
-        await on_startup(app)   # safely call your startup logic
+    async def post_init(application):
+        await on_startup(application)   # safely call your startup logic
 
     app = (
         ApplicationBuilder()
