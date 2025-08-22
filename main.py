@@ -1287,7 +1287,7 @@ async def on_startup(app):
     # Example: 00:05 on Wednesday (i.e., right after Tuesday ends)
     scheduler.add_job(mute_non_submitters_tuesday, CronTrigger(day_of_week='wed', hour=0, minute=5),args=[app])
     scheduler.add_job(mute_non_submitters_friday, CronTrigger(day_of_week='sat', hour=0, minute=5),args=[app])
-    scheduler.add_job(run_scheduled_posts, "interval", minutes=1)
+    scheduler.add_job(run_scheduled_posts, "interval", minutes=1, args=[app])
     scheduler.start()
     print("Scheduler started")
 
