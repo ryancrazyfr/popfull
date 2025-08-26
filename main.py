@@ -1300,51 +1300,51 @@ async def tuesdaypop_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
 
-async def post_init(app):  
-    await on_startup(app)  
+ async def post_init(app):  
+   await on_startup(app)  
 
-app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()  
-app.add_handler(CommandHandler("start", start))  
+ app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()  
+ app.add_handler(CommandHandler("start", start))  
 
 # Give this a higher priority (group=0) and an exact pattern  
 # Handlers  
 
-app.add_handler(CallbackQueryHandler(handle_role_choice, pattern="^role:"))  
-app.add_handler(CommandHandler("pending_new", list_pending))   # optional    
-app.add_handler(CommandHandler("broadcast", broadcast))  
-app.add_handler(CommandHandler("submitpop", submitpop))  
-app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern='^pop_'))  
-app.add_handler(CommandHandler("getid", getid))  
-app.add_handler(CommandHandler("friday", friday_links))  
-app.add_handler(CommandHandler("tuesday", tuesdaypop_links))  
-app.add_handler(CommandHandler("runcheck", runcheck))  
-app.add_handler(CommandHandler("runcheck2", runcheck2))  
-app.add_handler(CommandHandler("runfresh", run_fresh_command))  
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+_(friday|tuesday)"), approve))  
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+_(friday|tuesday)"), reject))  
-app.add_handler(CommandHandler("ask", ask))  
-app.add_handler(CommandHandler("testreminder", test_pop_reminder))  
-app.add_handler(CommandHandler("vip_add", vip_add))  
-app.add_handler(MessageHandler(filters.VIDEO, handle_video))  
-app.add_handler(MessageHandler(filters.PHOTO, handle_photo))  
+ app.add_handler(CallbackQueryHandler(handle_role_choice, pattern="^role:"))  
+ app.add_handler(CommandHandler("pending_new", list_pending))   # optional    
+ app.add_handler(CommandHandler("broadcast", broadcast))  
+ app.add_handler(CommandHandler("submitpop", submitpop))  
+ app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern='^pop_'))  
+ app.add_handler(CommandHandler("getid", getid))  
+ app.add_handler(CommandHandler("friday", friday_links))  
+ app.add_handler(CommandHandler("tuesday", tuesdaypop_links))  
+ app.add_handler(CommandHandler("runcheck", runcheck))  
+ app.add_handler(CommandHandler("runcheck2", runcheck2))  
+ app.add_handler(CommandHandler("runfresh", run_fresh_command))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+_(friday|tuesday)"), approve))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+_(friday|tuesday)"), reject))  
+ app.add_handler(CommandHandler("ask", ask))  
+ app.add_handler(CommandHandler("testreminder", test_pop_reminder))  
+ app.add_handler(CommandHandler("vip_add", vip_add))  
+ app.add_handler(MessageHandler(filters.VIDEO, handle_video))  
+ app.add_handler(MessageHandler(filters.PHOTO, handle_photo))  
 
 #live circle video (video note)
 
-app.add_handler(MessageHandler(filters.VIDEO_NOTE & filters.ChatType.PRIVATE, handle_video_note))
+ app.add_handler(MessageHandler(filters.VIDEO_NOTE & filters.ChatType.PRIVATE, handle_video_note))
 
 #optional fallback normal videos
 
-app.add_handler(MessageHandler(filters.VIDEO & filters.ChatType.PRIVATE, handle_video_fallback))  
+ app.add_handler(MessageHandler(filters.VIDEO & filters.ChatType.PRIVATE, handle_video_fallback))  
 
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_new_\d+$"), approve_new))  
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_new_\d+$"), reject_new))  
-app.add_handler(CommandHandler("refresh", refresh_command))  
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))  
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))  
-app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_refresh_added))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_new_\d+$"), approve_new))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_new_\d+$"), reject_new))  
+ app.add_handler(CommandHandler("refresh", refresh_command))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_refresh_added))  
 
   
-app.run_polling()
+ app.run_polling()
 
 if name == "main":
 main()
