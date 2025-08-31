@@ -425,24 +425,35 @@ async def list_pending(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text("🟨 Pending user IDs:\n" + "\n".join(map(str, sorted(pending))))
     
+#POP + Refresh Selection
 async def submitpop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("Friday POP", callback_data='pop_friday')],
-        [InlineKeyboardButton("Tuesday POP", callback_data='pop_tuesday')]
+        [InlineKeyboardButton("Tuesday POP", callback_data='pop_tuesday')],
+        [InlineKeyboardButton("Monthly Refresh", callback_data='monthly_refresh')]  # ✅ new button
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Which POP are you submitting?", reply_markup=reply_markup)
+    await update.message.reply_text("Which one are you submitting?", reply_markup=reply_markup)
 
 
+# Handle button presses
 async def handle_pop_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
+    if query.data == "monthly_refresh":
+        # ✅ trigger refresh flow
+        await query.edit_message_text("Please type 'added' if you’ve completed the monthly refresh.")
+        context.chat_data["awaiting_refresh"] = True
+        return
+
+    # Otherwise POP handling
     pop_day = 'friday' if query.data == 'pop_friday' else 'tuesday'
     context.user_data['pop_day'] = pop_day
-    context.chat_data["expecting_photo"] = True  # ✅ This line is needed
+    context.chat_data["expecting_photo"] = True
 
     await query.edit_message_text(f"Great! Now please send your {pop_day.capitalize()} POP screenshot.")
+
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Only allow photos in private chat
@@ -1323,7 +1334,8 @@ def main():
  app.add_handler(CommandHandler("pending_new", list_pending))   # optional    
  app.add_handler(CommandHandler("broadcast", broadcast))  
  app.add_handler(CommandHandler("submitpop", submitpop))  
- app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern='^pop_'))  
+ app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern='^pop_')) 
+ app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern='^(pop_|monthly_refresh)'))
  app.add_handler(CommandHandler("getid", getid))  
  app.add_handler(CommandHandler("friday", friday_links))  
  app.add_handler(CommandHandler("tuesday", tuesdaypop_links))  
