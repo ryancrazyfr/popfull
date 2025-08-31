@@ -190,7 +190,8 @@ Welcome_MSG_URL = "https://imgur.com/a/MV79r1I"
 def role_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("Verify For the network", callback_data="role:new"),
-         InlineKeyboardButton("POP Submission", callback_data="role:exp")]
+         InlineKeyboardButton("POP Submission", callback_data="role:exp")],
+        [InlineKeyboardButton("🤖 Buy a Bot", callback_data="buybot")]
     ])
 
 
@@ -261,6 +262,33 @@ async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
         parse_mode="Markdown",
     )
 
+async def handle_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    message = (
+        "💼 **Custom Bot Pricing** 💼\n\n"
+        "Here’s what you can get:\n\n"
+        "🔹 **Basic Bot** – $75\n"
+        " • /start welcome\n"
+        " • POP submission logging\n"
+        " • Simple approval/reject\n\n"
+        "🔹 **Standard Bot** – $200\n"
+        " • Google Sheets logging\n"
+        " • Auto-mute for missed POPs\n"
+        " • Reminders system\n"
+        " • Monthly refresh\n\n"
+        "🔹 **Premium Bot** – $400+\n"
+        " • Everything in Standard\n"
+        " • Auto-posting ads (text, photo, video)\n"
+        " • Google Drive integration\n"
+        " • Dashboard (stats, charts)\n"
+        " • Priority support\n\n"
+        "🚀 Save time, grow your network, and stay scam-free with automation.\n\n"
+        "👉 DM @YourUsername to order your bot today."
+    )
+
+    await query.edit_message_text(message, parse_mode="Markdown")
     
 async def handle_video_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != "private":
@@ -1338,7 +1366,8 @@ def main():
 # Give this a higher priority (group=0) and an exact pattern  
 # Handlers  
 
- app.add_handler(CallbackQueryHandler(handle_role_choice, pattern="^role:"))  
+ app.add_handler(CallbackQueryHandler(handle_role_choice, pattern="^role:")) 
+ app.add_handler(CallbackQueryHandler(handle_buybot, pattern="^buybot$"))
  app.add_handler(CommandHandler("pending_new", list_pending))   # optional    
  app.add_handler(CommandHandler("broadcast", broadcast))  
  app.add_handler(CommandHandler("submitpop", submitpop))  
