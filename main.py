@@ -232,16 +232,17 @@ async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     role = "exp" if query.data == "role:exp" else "new"
     context.user_data["role"] = role
 
-    
+    # Back button keyboard
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("⬅️ Back", callback_data="go_back")]
     ])
 
-    
     if role == "exp":
         # Experienced → send links; no waiting for verification
-        
-        await query.edit_message_text("Great! Here are your POP links 👇")
+        await query.edit_message_text(
+            "Great! Here are your POP links 👇",
+            reply_markup=keyboard   # 👈 attach here
+        )
         # Send links as plain text so underscores in URLs don't break Markdown
         await context.bot.send_message(
             chat_id=query.message.chat_id,
@@ -253,22 +254,18 @@ async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
             text=tuesday_links,
             disable_web_page_preview=True,
         )
-        
-        # Optional: immediately allow POP flow
-        
         return
 
     # New → ask for a live circle verification and wait for it
     context.chat_data["awaiting_live_circle"] = True
-    
     await query.edit_message_text(
         "🆕 **New model verification**\n\n"
         "Please send a *live circle video* (tap the mic and switch to cam) saying:\n"
         "“Hi Silk and Sin bot, today’s date showing full face.”\n\n"
         "Once I receive it, I’ll pass it to an admin for approval.",
         parse_mode="Markdown",
+        reply_markup=keyboard   # 👈 also attach here
     )
-    
     
 
 async def handle_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE):
