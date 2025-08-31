@@ -247,6 +247,10 @@ async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
             text=tuesday_links,
             disable_web_page_preview=True,
         )
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("⬅️ Back", callback_data="go_back")]
+        ])
+
         # Optional: immediately allow POP flow
         
         return
@@ -261,6 +265,11 @@ async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
         "Once I receive it, I’ll pass it to an admin for approval.",
         parse_mode="Markdown",
     )
+    
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("⬅️ Back", callback_data="go_back")]
+    ])
+
 
 async def handle_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
