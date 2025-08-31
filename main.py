@@ -285,7 +285,7 @@ async def handle_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE):
         " • Dashboard (stats, charts)\n"
         " • Priority support\n\n"
         "🚀 Save time, grow your network, and stay scam-free with automation.\n\n"
-        "👉 DM @YourUsername to order your bot today."
+        "👉 DM @sexydolladmin to order your bot today."
     )
 
     await query.edit_message_text(message, parse_mode="Markdown")
