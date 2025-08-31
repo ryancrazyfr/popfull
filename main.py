@@ -48,6 +48,10 @@ TUESDAY_GROUP_IDS = [
     -1002076400364
 ]
 
+REFRESH_IDS = [
+    -1001512076600,  # Start Hoes
+    -1001867826270   # Wickedly Wild
+    
 REMINDER_GROUP_ID = -1001664882105
 
 
@@ -101,7 +105,6 @@ ScheduledPosts = spreadsheet.worksheet("ScheduledPosts")
 drive_creds = service_account.Credentials.from_service_account_info(creds_dict)
 drive_service = build("drive", "v3", credentials=drive_creds)
 
-REFRESH_IDS = [-1001512076600, -1001706140667, -1001867826270]  # your 3 refresh groups
 
 
 def is_admin(user_id: int) -> bool:
