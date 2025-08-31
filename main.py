@@ -1214,7 +1214,7 @@ async def mute_non_refresh_submitters(context):
                             print(f"⚠️ User {telegram_id} not in group {group_id} (status: {member.status})")
                             continue  # Skip to next group
                     except (Forbidden, BadRequest, TelegramError) as e:
-                        print(f"⚠️ Failed to fetch member status for user {user_id} in group {group_id}: {e}")
+                        print(f"⚠️ Failed to fetch member status for user {telegram_id} in group {group_id}: {e}")
                         continue  # Skip to next group
 
                     # Get group title
@@ -1237,7 +1237,11 @@ async def mute_non_refresh_submitters(context):
                     try:
                         await context.bot.send_message(
                             chat_id=int(telegram_id),
-                            text=f"🔇 You’ve been muted in *{group_title}* for not doing the monthly refresh!",
+                            text=(
+                                f"🔇 You’ve been muted in *{group_title}* for not doing the monthly refresh!\n\n"
+                                "📌 Please add buyers and submit your refresh to this bot once done.\n"
+                                "Use the command /submitpop ✅"
+                            ),
                             parse_mode="Markdown"
                         )
                     except Exception as e:
