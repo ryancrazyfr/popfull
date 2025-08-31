@@ -51,7 +51,8 @@ TUESDAY_GROUP_IDS = [
 REFRESH_IDS = [
     -1001512076600,  # Start Hoes
     -1001867826270   # Wickedly Wild
-    
+]
+
 REMINDER_GROUP_ID = -1001664882105
 
 
