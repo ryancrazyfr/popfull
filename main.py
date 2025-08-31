@@ -231,6 +231,8 @@ async def handle_role_choice(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # Record role on the user
     role = "exp" if query.data == "role:exp" else "new"
     context.user_data["role"] = role
+
+    
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("⬅️ Back", callback_data="go_back")]
     ])
