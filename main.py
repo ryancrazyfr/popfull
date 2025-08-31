@@ -288,8 +288,23 @@ async def handle_buybot(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "👉 DM @sexydolladmin to order your bot today."
     )
 
-    await query.edit_message_text(message, parse_mode="Markdown")
+    # Add Back button here
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("⬅️ Back", callback_data="go_back")]
+    ])
+
+    await query.edit_message_text(message, parse_mode="Markdown", reply_markup=keyboard)
     
+async def handle_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    await query.edit_message_text(
+        text=WELCOME_TEXT,
+        parse_mode="Markdown",
+        reply_markup=role_keyboard()
+    )
+
 async def handle_video_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != "private":
         return
@@ -1368,6 +1383,7 @@ def main():
 
  app.add_handler(CallbackQueryHandler(handle_role_choice, pattern="^role:")) 
  app.add_handler(CallbackQueryHandler(handle_buybot, pattern="^buybot$"))
+ app.add_handler(CallbackQueryHandler(handle_back, pattern="^go_back$"))
  app.add_handler(CommandHandler("pending_new", list_pending))   # optional    
  app.add_handler(CommandHandler("broadcast", broadcast))  
  app.add_handler(CommandHandler("submitpop", submitpop))  
