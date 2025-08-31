@@ -1161,20 +1161,30 @@ def get_refresh_user_ids(refresh_sheet):
             timestamp = datetime.strptime(ts_str, "%Y-%m-%d %I:%M %p")
 
             if start <= timestamp < end:
-                user_ids.add(str(row["User_ID"]))
+                telegram_ids.add(str(row["User_ID"]))   # ✅ use telegram_ids not user_ids
         except Exception as e:
             print(f"⚠️ Skipping row due to error: {e}, row: {row}")
 
     print(f"✅ Found {len(telegram_ids)} refresh users: {telegram_ids}")
     return telegram_ids
+    
 
 def get_all_tracked_user_ids(refresh_sheet):
     records = refresh_sheet.get_all_records()
     return {str(row["User_ID"]) for row in records if "User_ID" in row}
 
 from telegram.error import Forbidden, BadRequest, TelegramError
-from telegram import ChatPermissions
+from telegram import ChatPermissions 
 
+# Mute but still allow adding members
+MUTED_PERMISSIONS = ChatPermissions(
+    can_send_messages=False,
+    can_send_media_messages=False,
+    can_send_polls=False,
+    can_send_other_messages=False,
+    can_add_web_page_previews=False,
+    can_invite_users=True   # ✅ allow adding buyers
+)
 async def mute_non_refresh_submitters(context):
     tracked_users = get_all_tracked_user_ids(refresh_sheet)
     submitted_users = get_refresh_user_ids(refresh_sheet)
@@ -1205,7 +1215,7 @@ async def mute_non_refresh_submitters(context):
                     await context.bot.restrict_chat_member(
                         chat_id=group_id,
                         user_id=int(telegram_id),
-                        permissions=ChatPermissions(can_send_messages=False)
+                        permissions=MUTED_PERMISSIONS
                     )
                     print(f"✅ Muted {telegram_id} in {group_title}")
 
