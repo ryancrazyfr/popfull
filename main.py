@@ -1432,10 +1432,10 @@ async def on_startup(app):
 
 
 async def friday_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(pop_links, parse_mode="Markdown", disable_web_page_preview=True)
+    await update.message.reply_text(pop_links, parse_mode="HTML", disable_web_page_preview=True)
 
 async def tuesdaypop_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(tuesday_links, parse_mode="Markdown", disable_web_page_preview=True)
+    await update.message.reply_text(tuesday_links, parse_mode="HTML", disable_web_page_preview=True)
 
 
 def main():
