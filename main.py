@@ -1463,29 +1463,29 @@ def main():
  app.add_handler(CommandHandler("runcheck", runcheck))  
  app.add_handler(CommandHandler("runcheck2", runcheck2))  
  app.add_handler(CommandHandler("runfresh", run_fresh_command))  
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+_(friday|tuesday)"), approve), group=0)  
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+_(friday|tuesday)"), reject), group=0)    
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+_(friday|tuesday)"), approve))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+_(friday|tuesday)"), reject))    
  app.add_handler(CommandHandler("testreminder", test_pop_reminder))  
  app.add_handler(CommandHandler("vip_add", vip_add))
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_new_\d+$"), approve_new), group=0)  
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_new_\d+$"), reject_new), group=0)  
- app.add_handler(MessageHandler(filters.VIDEO, handle_video), group=1)  
- app.add_handler(MessageHandler(filters.PHOTO, handle_photo), group=0)  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_new_\d+$"), approve_new))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_new_\d+$"), reject_new))  
+ app.add_handler(MessageHandler(filters.VIDEO, handle_video))  
+ app.add_handler(MessageHandler(filters.PHOTO, handle_photo))  
 
 #live circle video (video note)
 
- app.add_handler(MessageHandler(filters.VIDEO_NOTE & filters.ChatType.PRIVATE, handle_video_note), group=0)
- app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_adult_link), group=0)
+ app.add_handler(MessageHandler(filters.VIDEO_NOTE & filters.ChatType.PRIVATE, handle_video_note))
+ app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_adult_link))
 
 #optional fallback normal videos
 
- app.add_handler(MessageHandler(filters.VIDEO & filters.ChatType.PRIVATE, handle_video_fallback), group=0)  
+ app.add_handler(MessageHandler(filters.VIDEO & filters.ChatType.PRIVATE, handle_video_fallback),group=0)  
 
  
  app.add_handler(CommandHandler("refresh", refresh_command))  
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh), group=0)  
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh),group=0)  
- app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_refresh_added), group=0)
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_refresh_added))
  
 
   
