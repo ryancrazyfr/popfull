@@ -1450,7 +1450,9 @@ def main():
  app.add_handler(CallbackQueryHandler(handle_role_choice, pattern="^role:"))
  app.add_handler(CallbackQueryHandler(handle_buybot, pattern="^buybot$"))
  app.add_handler(CallbackQueryHandler(handle_back, pattern="^go_back$"))
+ app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern='^pop_'))
  app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern="^(pop_|monthly_refresh)"))
+    
 
 # Core commands
  app.add_handler(CommandHandler("pending_new", list_pending))
