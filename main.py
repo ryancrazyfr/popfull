@@ -1447,50 +1447,50 @@ def main():
  app.add_handler(CommandHandler("start", start))
 
 # Inline button handlers (role choice, back, buybot, etc.)
-app.add_handler(CallbackQueryHandler(handle_role_choice, pattern="^role:"))
-app.add_handler(CallbackQueryHandler(handle_buybot, pattern="^buybot$"))
-app.add_handler(CallbackQueryHandler(handle_back, pattern="^go_back$"))
-app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern="^(pop_|monthly_refresh)"))
+ app.add_handler(CallbackQueryHandler(handle_role_choice, pattern="^role:"))
+ app.add_handler(CallbackQueryHandler(handle_buybot, pattern="^buybot$"))
+ app.add_handler(CallbackQueryHandler(handle_back, pattern="^go_back$"))
+ app.add_handler(CallbackQueryHandler(handle_pop_selection, pattern="^(pop_|monthly_refresh)"))
 
 # Core commands
-app.add_handler(CommandHandler("pending_new", list_pending))
-app.add_handler(CommandHandler("broadcast", broadcast))
-app.add_handler(CommandHandler("submitpop", submitpop))
-app.add_handler(CommandHandler("getid", getid))
-app.add_handler(CommandHandler("friday", friday_links))
-app.add_handler(CommandHandler("tuesday", tuesdaypop_links))
-app.add_handler(CommandHandler("runcheck", runcheck))
-app.add_handler(CommandHandler("runcheck2", runcheck2))
-app.add_handler(CommandHandler("runfresh", run_fresh_command))
-app.add_handler(CommandHandler("testreminder", test_pop_reminder))
-app.add_handler(CommandHandler("vip_add", vip_add))
-app.add_handler(CommandHandler("refresh", refresh_command))   # ✅ moved higher
+ app.add_handler(CommandHandler("pending_new", list_pending))
+ app.add_handler(CommandHandler("broadcast", broadcast))
+ app.add_handler(CommandHandler("submitpop", submitpop))
+ app.add_handler(CommandHandler("getid", getid))
+ app.add_handler(CommandHandler("friday", friday_links))
+ app.add_handler(CommandHandler("tuesday", tuesdaypop_links))
+ app.add_handler(CommandHandler("runcheck", runcheck))
+ app.add_handler(CommandHandler("runcheck2", runcheck2))
+ app.add_handler(CommandHandler("runfresh", run_fresh_command))
+ app.add_handler(CommandHandler("testreminder", test_pop_reminder))
+ app.add_handler(CommandHandler("vip_add", vip_add))
+ app.add_handler(CommandHandler("refresh", refresh_command))   # ✅ moved higher
 
 # Approval/reject handlers
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+_(friday|tuesday)"), approve))
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+_(friday|tuesday)"), reject))
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_new_\d+$"), approve_new))
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_new_\d+$"), reject_new))
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))
-app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+_(friday|tuesday)"), approve))
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+_(friday|tuesday)"), reject))
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_new_\d+$"), approve_new))
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_new_\d+$"), reject_new))
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))
 
 # POP "added" handler
-app.add_handler(
-    MessageHandler(
-        filters.TEXT & filters.Regex(r"^(?i)added$") & filters.ChatType.PRIVATE,
-        handle_refresh_added
-    ),
-    group=0
-)
+ app.add_handler(
+     MessageHandler(
+         filters.TEXT & filters.Regex(r"^(?i)added$") & filters.ChatType.PRIVATE,
+         handle_refresh_added
+     ),
+     group=0
+ )
 
 # Media handlers
-app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-app.add_handler(MessageHandler(filters.VIDEO, handle_video))
-app.add_handler(MessageHandler(filters.VIDEO_NOTE & filters.ChatType.PRIVATE, handle_video_note))
-app.add_handler(MessageHandler(filters.VIDEO & filters.ChatType.PRIVATE, handle_video_fallback))
+ app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+ app.add_handler(MessageHandler(filters.VIDEO, handle_video))
+ app.add_handler(MessageHandler(filters.VIDEO_NOTE & filters.ChatType.PRIVATE, handle_video_note))
+ app.add_handler(MessageHandler(filters.VIDEO & filters.ChatType.PRIVATE, handle_video_fallback))
 
 # Adult link handler (must be after others)
-app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_adult_link))
+ app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_adult_link))
 
   
  app.run_polling()
