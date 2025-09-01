@@ -1430,7 +1430,9 @@ def main():
  app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+_(friday|tuesday)"), reject))  
  app.add_handler(CommandHandler("ask", ask))  
  app.add_handler(CommandHandler("testreminder", test_pop_reminder))  
- app.add_handler(CommandHandler("vip_add", vip_add))  
+ app.add_handler(CommandHandler("vip_add", vip_add))
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_new_\d+$"), approve_new))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_new_\d+$"), reject_new))  
  app.add_handler(MessageHandler(filters.VIDEO, handle_video))  
  app.add_handler(MessageHandler(filters.PHOTO, handle_photo))  
 
@@ -1443,8 +1445,7 @@ def main():
 
  app.add_handler(MessageHandler(filters.VIDEO & filters.ChatType.PRIVATE, handle_video_fallback))  
 
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_new_\d+$"), approve_new))  
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_new_\d+$"), reject_new))  
+ 
  app.add_handler(CommandHandler("refresh", refresh_command))  
  app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))  
  app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))  
