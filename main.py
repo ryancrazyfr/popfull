@@ -74,18 +74,18 @@ Natural Melons\nt.me/+Iu-R20OXD2NmMjNh\n
 Kitty Wet\nt.me/+H8aVpb7S33NiZmNh\n
 """
 
-refresh_links = """Regular/buyers only groups ( the groups below aren't pop groups please don't do pop with these links)\n\n 
+refresh_links = """✅️ Regular/buyers only groups (the groups below aren't pop groups please don't do pop with these links)\n 
 
-👠 Wickedly Wild (191 members) +5 buyers  +2 monthly Refresh 
+👠 Wickedly Wild +5 buyers  +2 monthly Refresh 
  https://t.me/+IfdNFBq3cZs5MzQx\n
 
-🌟 Star Hoes (146 members) +5 buyers +2 monthly Refresh 
+🌟 Star Hoes +5 buyers +2 monthly Refresh 
 https://t.me/+Mk3KCg1_wP44MTFh\n
 
-😈 Buyers Paradise (180 members) + 10 buyers 
+😈 Buyers Paradise + 10 buyers 
 https://t.me/+x5HoQ9Bud3FjMTNh\n
 
-💋 Pleasure Palace (209 members) +10 buyers 
+💋 Pleasure Palace +10 buyers 
 https://t.me/+bOmZq5ODKslhMWFh
 """
 
@@ -432,9 +432,24 @@ async def approve_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Send welcome message
         await context.bot.send_message(
             chat_id=target_id,
-            text="✅ *You’re verified!*\n\nJoin the model chat\n\nhttps://t.me/+Mw5-xF7ZvMw3MDkx\n\nBelow are your POP links. Please promote these links somewhere you can get buyers to join and send the screenshot to this bot.\n\nUse the command /submitpop",
-            parse_mode="Markdown",
-            disable_web_page_preview=True
+            text=(
+                  "✅ *You’re verified!*\n\n"
+                  "💎 Welcome to the Silk & Sin Network 💎\n"
+                  "Join the model chat:\n"
+                  "👉 https://t.me/+Mw5-xF7ZvMw3MDkx\n\n"
+                  "📌 Below are your POP links. Please promote these links where you can attract buyers, "
+                  "and then send the screenshot to this bot using /submitpop.\n\n"
+                  "📖 *POP Rules:*\n"
+                  "1️⃣ Links must be *clearly visible* in the screenshot (no hiding, blurring, or cropping).\n"
+                  "2️⃣ Submit on time (Friday & Tuesday deadlines apply).\n"
+                  "3️⃣ No editing, cropping, or reusing old POPs.\n"
+                  "4️⃣ Keep POP links in your preview channel for *at least 12 hours*.\n"
+                  "5️⃣ Failure to submit on time may result in muting or removal.\n"
+                  "6️⃣ Always promote links in quality spaces where buyers are active."
+                
+        ),
+           parse_mode="Markdown",
+           disable_web_page_preview=True
         )
 
         # Send POP links
