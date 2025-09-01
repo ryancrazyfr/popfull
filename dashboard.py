@@ -5,6 +5,8 @@ import gspread
 import pandas as pd
 from google.oauth2.service_account import Credentials
 
+
+
 # 🔑 Load Google credentials from environment variable
 creds_dict = json.loads(os.environ["GOOGLE_JSON"])  # or GOOGLE_CREDS, depending on what you set
 creds = Credentials.from_service_account_info(creds_dict, scopes=[
@@ -14,7 +16,7 @@ creds = Credentials.from_service_account_info(creds_dict, scopes=[
 
 # Connect to Google Sheets
 client = gspread.authorize(creds)
-spreadsheet = client.open("POP_Log")   # <-- Change to your actual Google Sheet name
+spreadsheet = client.open("pop_submissions")   # <-- Change to your actual Google Sheet name
 sheet = spreadsheet.worksheet("MuteStatus")   # <-- Change to your actual worksheet name
 
 # Load data into DataFrame
