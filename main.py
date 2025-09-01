@@ -1475,13 +1475,7 @@ def main():
  app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))
 
 # POP "added" handler
- app.add_handler(
-     MessageHandler(
-         filters.TEXT & filters.Regex(r"^(?i)added$") & filters.ChatType.PRIVATE,
-         handle_refresh_added
-     ),
-     group=0
- )
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"(?i)^added$") & filters.ChatType.PRIVATE, handle_refresh_added), group=0)
 
 # Media handlers
  app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
