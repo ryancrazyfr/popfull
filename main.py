@@ -1000,32 +1000,54 @@ async def send_tuesday_pop_reminder(context: ContextTypes.DEFAULT_TYPE):
                 print(f"⚠️ Failed to remind user {user_id}: {e}")
     
     
-async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not context.args:
-        await update.message.reply_text("❓ Please ask a question after the command. Example:\n/ask What is POP?")
+
+async def ask_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # If bot is waiting for a special input, skip auto-answer
+    if context.chat_data.get("awaiting_adult_link") \
+       or context.chat_data.get("awaiting_live_circle") \
+       or context.chat_data.get("expecting_photo") \
+       or context.chat_data.get("awaiting_refresh"):
         return
 
-    question = " ".join(context.args)
-
-    # Prompt restriction
-    if "pop" not in question.lower():
-        await update.message.reply_text("❌ I only answer questions about POP. Please rephrase.")
-        return
+    question = update.message.text.strip()
 
     try:
         response = openai.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a Telegram bot that helps users understand POP (Proof of Promotion), a process where content sellers prove that they promoted a group or channel by submitting a screenshot. Answer all questions based on this meaning of POP."},
-                {"role": "user", "content": question}
-
-            ]
+                {
+                    "role": "system",
+                    "content": (
+                        "You are the official assistant of the Silk & Sin Network. "
+                        "Answer ONLY questions about POP (Proof of Promotion), Silk & Sin rules, "
+                        "and how to remain unmuted.\n\n"
+                        "POP Process:\n"
+                        "- Use /submitpop to submit POP.\n"
+                        "- Initial POP unlocks you until the next cycle.\n"
+                        "- After that, you must submit weekly POP.\n"
+                        "- Missing POP → muted until next valid submission.\n\n"
+                        "POP Rules:\n"
+                        "1. Links must be clearly visible in the screenshot.\n"
+                        "2. Submit on time (Friday & Tuesday deadlines).\n"
+                        "3. No reusing old POPs.\n"
+                        "4. Keep links in preview channel for 12+ hours.\n"
+                        "5. Promote where genuine buyers are active.\n\n"
+                        "Silk & Sin:\n"
+                        "- No drama, scam-free, high-spending verified buyers.\n"
+                        "- Safe environment for models.\n"
+                        "- Automated fairness with POP enforcement."
+                    ),
+                },
+                {"role": "user", "content": question},
+            ],
         )
+
         answer = response.choices[0].message.content.strip()
         await update.message.reply_text(f"🧠 {answer}")
+
     except Exception as e:
         await update.message.reply_text(f"⚠️ Error: {e}")
-
+        
 def get_duration_label(delta: timedelta) -> str:
     hours = delta.total_seconds() / 3600
     if hours == 24:
@@ -1441,30 +1463,30 @@ def main():
  app.add_handler(CommandHandler("runcheck", runcheck))  
  app.add_handler(CommandHandler("runcheck2", runcheck2))  
  app.add_handler(CommandHandler("runfresh", run_fresh_command))  
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+_(friday|tuesday)"), approve))  
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+_(friday|tuesday)"), reject))  
- app.add_handler(CommandHandler("ask", ask))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+_(friday|tuesday)"), approve), group=0)  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+_(friday|tuesday)"), reject), group=0)    
  app.add_handler(CommandHandler("testreminder", test_pop_reminder))  
  app.add_handler(CommandHandler("vip_add", vip_add))
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_new_\d+$"), approve_new))  
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_new_\d+$"), reject_new))  
- app.add_handler(MessageHandler(filters.VIDEO, handle_video))  
- app.add_handler(MessageHandler(filters.PHOTO, handle_photo))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_new_\d+$"), approve_new), group=0)  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_new_\d+$"), reject_new), group=0)  
+ app.add_handler(MessageHandler(filters.VIDEO, handle_video), group=0)  
+ app.add_handler(MessageHandler(filters.PHOTO, handle_photo), group=0)  
 
 #live circle video (video note)
 
- app.add_handler(MessageHandler(filters.VIDEO_NOTE & filters.ChatType.PRIVATE, handle_video_note))
- app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_adult_link))
+ app.add_handler(MessageHandler(filters.VIDEO_NOTE & filters.ChatType.PRIVATE, handle_video_note), group=0)
+ app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_adult_link), group=0)
 
 #optional fallback normal videos
 
- app.add_handler(MessageHandler(filters.VIDEO & filters.ChatType.PRIVATE, handle_video_fallback))  
+ app.add_handler(MessageHandler(filters.VIDEO & filters.ChatType.PRIVATE, handle_video_fallback), group=0)  
 
  
  app.add_handler(CommandHandler("refresh", refresh_command))  
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh))  
- app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh))  
- app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_refresh_added))  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh), group=0)  
+ app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh),group=0)  
+ app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_refresh_added), group=0)
+ app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, ask_chat), group=1)
 
   
  app.run_polling()
