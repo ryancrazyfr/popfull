@@ -16,7 +16,7 @@ creds = Credentials.from_service_account_info(creds_dict, scopes=[
 
 # Connect to Google Sheets
 client = gspread.authorize(creds)
-spreadsheet = client.open("pop_submissions")   # <-- Change to your actual Google Sheet name
+spreadsheet = client.open("POP Submissions")   # <-- Change to your actual Google Sheet name
 sheet = spreadsheet.worksheet("MuteStatus")   # <-- Change to your actual worksheet name
 
 # Load data into DataFrame
