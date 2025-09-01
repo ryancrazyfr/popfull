@@ -337,7 +337,7 @@ async def handle_video_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     try:
-        # Send as a normal video so it can have a caption
+        # Send as normal video so admin sees caption
         with open(path, "rb") as f:
             await context.bot.send_video(
                 chat_id=ADMIN_USER_ID,
@@ -354,9 +354,13 @@ async def handle_video_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Mark as pending
     context.bot_data.setdefault("pending_new", set()).add(user.id)
 
+    # Step 1 done ✅ – now ask for adult link
+    context.chat_data["awaiting_adult_link"] = True
     await update.message.reply_text(
-        "🧾 Thanks! I sent your verification to an admin. You’ll receive POP links once approved."
-        )
+        "✅ Thanks for sending your live circle verification!\n\n"
+        "📎 Please send your *verified adult profile link* (e.g., OnlyFans, Fansly, etc).",
+        parse_mode="Markdown"
+    )
 # (optional) also accept normal video as fallback if the user can’t send a circle video
 async def handle_video_fallback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != "private":
@@ -386,7 +390,24 @@ async def handle_video_fallback(update: Update, context: ContextTypes.DEFAULT_TY
 
     await update.message.reply_text("✅ Thanks! I sent your video to an admin for review.")
     
+    
+async def handle_adult_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.chat_data.get("awaiting_adult_link"):
+        return
 
+    link = update.message.text.strip()
+    user = update.effective_user
+
+    context.chat_data["awaiting_adult_link"] = False
+
+    # Forward link to admin
+    await context.bot.send_message(
+        chat_id=ADMIN_USER_ID,
+        text=f"🔗 Verified adult link from @{user.username or user.id} (ID: `{user.id}`):\n{link}",
+        parse_mode="Markdown"
+    )
+
+    await update.message.reply_text("🧾 Thanks! Your adult link was sent to the admin along with your live circle video.")
 
 def _admin_only(user_id: int) -> bool:
     return user_id == ADMIN_USER_ID
@@ -1416,6 +1437,7 @@ def main():
 #live circle video (video note)
 
  app.add_handler(MessageHandler(filters.VIDEO_NOTE & filters.ChatType.PRIVATE, handle_video_note))
+ app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_adult_link))
 
 #optional fallback normal videos
 
