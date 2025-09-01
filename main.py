@@ -1469,7 +1469,7 @@ def main():
  app.add_handler(CommandHandler("vip_add", vip_add))
  app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_new_\d+$"), approve_new), group=0)  
  app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_new_\d+$"), reject_new), group=0)  
- app.add_handler(MessageHandler(filters.VIDEO, handle_video), group=0)  
+ app.add_handler(MessageHandler(filters.VIDEO, handle_video), group=1)  
  app.add_handler(MessageHandler(filters.PHOTO, handle_photo), group=0)  
 
 #live circle video (video note)
@@ -1486,7 +1486,7 @@ def main():
  app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approverefresh_\d+$"), approve_refresh), group=0)  
  app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/rejectrefresh_\d+$"), reject_refresh),group=0)  
  app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_refresh_added), group=0)
- app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, ask_chat), group=1)
+ 
 
   
  app.run_polling()
