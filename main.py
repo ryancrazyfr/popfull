@@ -358,7 +358,7 @@ async def handle_video_note(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.chat_data["awaiting_adult_link"] = True
     await update.message.reply_text(
         "✅ Thanks for sending your live circle verification!\n\n"
-        "📎 Please send your *verified adult profile link* (e.g., OnlyFans, Fansly, etc).",
+        "📎 Please send your *verified adult profile link* (e.g., OnlyFans, Fansly, etc). (dont send any pictures, text only)",
         parse_mode="Markdown"
     )
 # (optional) also accept normal video as fallback if the user can’t send a circle video
@@ -1425,8 +1425,8 @@ async def on_startup(app):
     scheduler.add_job(check_vip_expiry, CronTrigger(minute="*/30"), args=[app])
     scheduler.add_job(mute_non_refresh_submitters, CronTrigger(day=1, hour=0, minute=0), args =[app])  # Midnight on 1st
     # Example: 00:05 on Wednesday (i.e., right after Tuesday ends)
-    scheduler.add_job(mute_non_submitters_tuesday, CronTrigger(day_of_week='wed', hour=0, minute=5),args=[app])
-    scheduler.add_job(mute_non_submitters_friday, CronTrigger(day_of_week='sat', hour=0, minute=5),args=[app])
+    scheduler.add_job(mute_non_submitters_tuesday, CronTrigger(day_of_week='mon', hour=23, minute=59),args=[app])
+    scheduler.add_job(mute_non_submitters_friday, CronTrigger(day_of_week='thu', hour=23, minute=59),args=[app])
     scheduler.start()
     print("Scheduler started")
 
