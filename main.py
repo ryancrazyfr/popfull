@@ -29,7 +29,7 @@ GOOGLE_JSON = os.environ['GOOGLE_JSON']
 SHEET_NAME = "POP Submissions"
 POP_DIR = "pop_submissions"
 DRIVE_FOLDER_ID = "1f63NmpGcktoNdEsy25OQsYvcfJeO5vpP"
-ADMIN_USER_ID = 6276794389
+ADMIN_USER_ID = 850509775
 ADMIN_USER_IDS = {ADMIN_USER_ID}  # add more IDs if needed
 
 GROUP_IDS = [
