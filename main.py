@@ -1486,7 +1486,7 @@ def main():
  app.add_handler(MessageHandler(filters.VIDEO & filters.ChatType.PRIVATE, handle_video_fallback))
 
 # Adult link handler (must be after others)
- app.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE, handle_adult_link))
+ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & filters.ChatType.PRIVATE, handle_adult_link))
 
   
  app.run_polling()
