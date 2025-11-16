@@ -1443,7 +1443,7 @@ def main():
  async def post_init(app):  
    await on_startup(app)  
 
- app = ApplicationBuilder().token(BOT_TOKEN).post_init(on_startup).build()  
+ app = ApplicationBuilder().token(BOT_TOKEN).post_init(post_init).build()  
  app.add_handler(CommandHandler("start", start))
 
 # Inline button handlers (role choice, back, buybot, etc.)
