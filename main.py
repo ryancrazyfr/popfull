@@ -58,20 +58,20 @@ REMINDER_GROUP_ID = -1001664882105
 
 pop_links = """🔗 *Friday POP*
 
-Sexy Baddies\nt.me/+tGBn9q_6Z-9jMTAx\n  
-Content Hub\nt.me/+F_BNXoMjPPhmNGEx\n  
-Seductive Sirens\nt.me/+nvm1zwZz7FA1MTdh\n  
-The Sluts Store\nt.me/+pkxiRKn2ZvcyMjI8\n  
-My Hot Friends\nt.me/+A47SCYOy2_MzOTcx\n  
-CumSlut Paradise\nt.me/+y5TaJPgVGvI1NzQ0\n  
+Sexy Dolls\nt.me/+fL7Ljzo8vXA1NmU0\n  
+Content Hub\nt.me/+iguYEoczIl1jZmY0\n  
+Seductive Sirens\nt.me/+JO_A6MHMVBRkZDE8\n  
+The Sluts Store\nt.me/+HJYCm5oeTOA5MDE8\n  
+My Hot Friends\nt.me/+isgT_YOk0vliNTY0\n  
+CumSlut Paradise\nt.me/+aRldyzJPHzE3ZjZk\n  
 """
 tuesday_links = """ 🆕️ *Tuesday POP* 
 
-Fashion dolls\nt.me/+d_NP9s67LjViYTAx\n
-College chicks\nt.me/+x3Lq01jlY_k3OWNh\n
-Content Palace\nt.me/+11zyCb_Ei-9mNjMx\n
-Natural Melons\nt.me/+Iu-R20OXD2NmMjNh\n
-Kitty Wet\nt.me/+H8aVpb7S33NiZmNh\n
+Fashion dolls\nt.me/+51I72rtICgMzMjNk\n
+College chicks\nt.me/+VNmJZf6UfAUxY2U0\n
+Content Palace\nt.me/+jIZ6y2WsOidiODE0\n
+Silver Dolls\nt.me/+FzroE0DeVos3YTFk\n
+Diamond Dolls\nt.me/++ZqAAaqss-6cwYmU0\n
 """
 
 refresh_links = """✅️ Regular/buyers only groups (the groups below aren't pop groups please don't do pop with these links)\n 
