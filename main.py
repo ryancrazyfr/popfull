@@ -71,7 +71,7 @@ Fashion dolls\nt.me/+51I72rtICgMzMjNk\n
 College chicks\nt.me/+VNmJZf6UfAUxY2U0\n
 Content Palace\nt.me/+jIZ6y2WsOidiODE0\n
 Silver Dolls\nt.me/+FzroE0DeVos3YTFk\n
-Diamond Dolls\nt.me/++ZqAAaqss-6cwYmU0\n
+Diamond Dolls\nt.me/+ZqAAaqss-6cwYmU0\n
 """
 
 refresh_links = """✅️ Regular/buyers only groups (the groups below aren't pop groups please don't do pop with these links)\n 
