@@ -214,11 +214,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(f"Error logging to tracked sheet: {e}")
 
     # Send image first
-    await context.bot.send_photo(
-        chat_id=update.effective_chat.id,
-        photo=Welcome_MSG_URL  # can be file_id, HTTP URL, or open("path", "rb")
-    )
-
+   
     # Send welcome text + buttons
     await update.message.reply_markdown(
         WELCOME_TEXT,
