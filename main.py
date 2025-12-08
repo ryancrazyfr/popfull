@@ -638,7 +638,6 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     await update.message.reply_text("📤 Screen recording POP submitted! Waiting for admin approval.")
-
 async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         command = update.message.text.strip()
@@ -658,9 +657,9 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Upload to Drive
         # drive_link = upload_to_drive(data["username"], data["filename"], data["filepath"])
-          now = datetime.now()
-          date_str = now.strftime('%Y-%m-%d')
-          time_str = now.strftime('%H:%M:%S')
+        now = datetime.now()
+        date_str = now.strftime('%Y-%m-%d')
+        time_str = now.strftime('%H:%M:%S')
 
         # Log to correct sheet
         if pop_day == "tuesday":
@@ -669,7 +668,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 str(data["user_id"]),
                 date_str,
                 time_str,
-                #drive_link
+                # drive_link
             ])
             unmute_groups = TUESDAY_GROUP_IDS
         else:
@@ -678,7 +677,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 str(data["user_id"]),
                 date_str,
                 time_str,
-                #drive_link
+                # drive_link
             ])
             unmute_groups = GROUP_IDS
 
@@ -717,6 +716,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         await update.message.reply_text(f"⚠️ Error: {str(e)}")
+
 async def reject(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != "private":
         return
