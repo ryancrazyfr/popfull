@@ -1433,6 +1433,44 @@ async def friday_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def tuesdaypop_links(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(tuesday_links, parse_mode="HTML", disable_web_page_preview=True)
 
+from telegram import ChatMemberAdministrator, ChatMemberOwner
+from telegram.constants import ChatMemberStatus
+from telegram.ext import ContextTypes, CommandHandler
+
+async def promote(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        if not update.message:
+            return
+
+        # Check if the bot is admin with promotion rights
+        bot_member = await update.effective_chat.get_member(context.bot.id)
+        if bot_member.status != ChatMemberStatus.ADMINISTRATOR or not bot_member.can_promote_members:
+            await update.message.reply_text("❌ I don't have permission to promote admins in this group.")
+            return
+        
+        if len(context.args) != 1:
+            await update.message.reply_text("Usage: /promote <user_id>")
+            return
+        
+        user_id = int(context.args[0])
+        
+        await context.bot.promote_chat_member(
+            chat_id=update.effective_chat.id,
+            user_id=user_id,
+            can_manage_chat=True,
+            can_change_info=True,
+            can_delete_messages=True,
+            can_manage_video_chats=True,
+            can_promote_members=True,   # allow them to promote too (optional)
+            can_restrict_members=True,
+            can_invite_users=True,
+            can_pin_messages=True,
+        )
+        
+        await update.message.reply_text(f"✅ User `{user_id}` promoted to admin.", parse_mode="Markdown")
+    
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error: {str(e)}")
 
 def main():
 
@@ -1463,7 +1501,7 @@ def main():
  app.add_handler(CommandHandler("testreminder", test_pop_reminder))
  app.add_handler(CommandHandler("vip_add", vip_add))
  app.add_handler(CommandHandler("refresh", refresh_command))   # ✅ moved higher
-
+ app.add_handler(CommandHandler("promote", promote))
 # Approval/reject handlers
  app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/approve_\d+_(friday|tuesday)"), approve))
  app.add_handler(MessageHandler(filters.TEXT & filters.Regex(r"^/reject_\d+_(friday|tuesday)"), reject))
