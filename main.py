@@ -658,9 +658,9 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # Upload to Drive
         # drive_link = upload_to_drive(data["username"], data["filename"], data["filepath"])
-        # now = datetime.now()
-        # date_str = now.strftime('%Y-%m-%d')
-        # time_str = now.strftime('%H:%M:%S')
+         now = datetime.now()
+         date_str = now.strftime('%Y-%m-%d')
+         time_str = now.strftime('%H:%M:%S')
 
         # Log to correct sheet
         if pop_day == "tuesday":
