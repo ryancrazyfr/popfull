@@ -27,7 +27,6 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 BOT_TOKEN = os.environ['BOT_TOKEN']
 GOOGLE_JSON = os.environ['GOOGLE_JSON']
 SPREADSHEET_ID = "1rXCKlw581-NjN84nC3pgv7gAaPOqTcDgZYo19TUG5Xc/edit?usp=drivesdk"
-spreadsheet = client.open_by_key(SPREADSHEET_ID)
 POP_DIR = "pop_submissions"
 DRIVE_FOLDER_ID = "1f63NmpGcktoNdEsy25OQsYvcfJeO5vpP"
 ADMIN_USER_ID = 8505097754
