@@ -26,7 +26,8 @@ openai.api_key = os.environ["OPENAI_API_KEY"]
 
 BOT_TOKEN = os.environ['BOT_TOKEN']
 GOOGLE_JSON = os.environ['GOOGLE_JSON']
-SHEET_NAME = "POP Submissions"
+SPREADSHEET_ID = "1rXCKlw581-NjN84nC3pgv7gAaPOqTcDgZYo19TUG5Xc/edit?usp=drivesdk"
+spreadsheet = client.open_by_key(SPREADSHEET_ID)
 POP_DIR = "pop_submissions"
 DRIVE_FOLDER_ID = "1f63NmpGcktoNdEsy25OQsYvcfJeO5vpP"
 ADMIN_USER_ID = 8505097754
@@ -96,7 +97,7 @@ scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/au
 creds_dict = json.loads(GOOGLE_JSON)
 sheets_creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(sheets_creds)
-spreadsheet = client.open(SHEET_NAME)
+spreadsheet = client.open_by_key(SPREADSHEET_ID)
 sheet = spreadsheet.sheet1  # For POP Submissions
 refresh_sheet = spreadsheet.worksheet("Refresh_Groups")
 tuesday_sheet = spreadsheet.worksheet("Tuesday_Pop")
