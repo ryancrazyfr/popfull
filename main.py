@@ -669,7 +669,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 str(data["user_id"]),
                 date_str,
                 time_str,
-                drive_link
+                #drive_link
             ])
             unmute_groups = TUESDAY_GROUP_IDS
         else:
@@ -678,7 +678,7 @@ async def approve(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 str(data["user_id"]),
                 date_str,
                 time_str,
-                drive_link
+                #drive_link
             ])
             unmute_groups = GROUP_IDS
 
